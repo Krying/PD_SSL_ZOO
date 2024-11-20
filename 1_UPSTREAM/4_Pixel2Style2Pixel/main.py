@@ -19,21 +19,15 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-parser = argparse.ArgumentParser(description='Swin UNETR segmentation pipeline')
-parser.add_argument('--dec_checkpoint', default='/workspace/wjj910/Task1_clf/Task1_inversion/StyleGAN2_3d_PRO/model/fit_cent_192_no_intensity/model_25.pt', help='start training from saved checkpoint')
-parser.add_argument('--enc_checkpoint', default='/workspace/wjj910/Task1_clf/Task1_inversion/StyleGAN2_3d_PRO/model/fit_cent_96_no_intensity/model_15.pt', help='start training from saved checkpoint')
-parser.add_argument('--swin_checkpoint', default='/workspace/wjj910/Task1_clf/Task1_inversion/StyleGAN2_3d_PRO/SWIN_Loss/RESULTS_2/model_best.pt', help='start training from saved checkpoint')
-parser.add_argument('--swin_depth', default='enc', choices= ['enc', '+vit', '+dec'], help='start training from saved checkpoint')
+parser = argparse.ArgumentParser(description='Pixel2Style2Pixel upstream')
+parser.add_argument('--batch_size', default=1, type=int)
+parser.add_argument('--num_layer', default=12, type=int)
+parser.add_argument('--image_size', default=192, type=int)
+parser.add_argument('--max_epochs', default=300, type=int)
+parser.add_argument('--optim_lr', default=1e-6, type=float)
+parser.add_argument('--cuda_visible_devices', default='0', type=str)
 parser.add_argument('--img_save_dir', default='/workspace/wjj910/Task1_clf/Task1_inversion/StyleGAN2_3d_PRO/INVERSION_PY/reconstruct/', help='start training from saved checkpoint')
 parser.add_argument('--log_dir', default='/workspace/Ablation/ABLATION_PD/GAN_INV_PSP/outputs/', help='start training from saved checkpoint')
-parser.add_argument('--cuda_visible_devices', default='0', type=str)
-parser.add_argument('--image_size', default=192, type=int)
-parser.add_argument('--optim_lr', default=1e-6, type=float)
-parser.add_argument('--num_layer', default=12, type=int)
-parser.add_argument('--max_epochs', default=300, type=int)
-parser.add_argument('--batch_size', default=1, type=int)
-parser.add_argument('--loss', default="simple", type=str)
-parser.add_argument('--label_types', default='norm_pd', type=str)
 
 
 def main():

@@ -70,4 +70,4 @@ def get_loader(args):
 
     loader = [train_loader, val_loader]
 
-    return loader, train_real
+    return loader

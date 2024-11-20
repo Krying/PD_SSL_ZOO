@@ -2318,9 +2318,8 @@ class DiffusionModelEncoder_ansio(nn.Module):
         # self.out2 = nn.Sequential(normalization(num_channels[2]), nn.SiLU(), nn.Dropout(0.1), nn.AdaptiveAvgPool3d((2,2,2)), nn.Flatten(), nn.Linear(num_channels[2]*2*2*2, 512))
         # self.out3 = nn.Sequential(normalization(num_channels[3]), nn.SiLU(), nn.Dropout(0.1), nn.AdaptiveAvgPool3d((1,1,1)), nn.Flatten(), nn.Linear(num_channels[3]*1*1*1, 512))
 
-        # self.linear_1 = nn.Linear(512*5, 512)
-        # self.last_dropout = nn.Dropout(0.25)
-        self.linear = nn.Linear(512*5, 2)
+        # self.last_dropout = nn.Dropout(0.1)
+        self.linear = nn.Linear(512, 2)
     def forward(
         self,
         x: torch.Tensor,
@@ -2353,7 +2352,7 @@ class DiffusionModelEncoder_ansio(nn.Module):
             vector_list.append(h)
 
         #full_ver
-        '''
+        
         output0 = self.out0(vector_list[0])
         output1 = self.out1(vector_list[1])
         output2 = self.out2(vector_list[2])
@@ -2361,14 +2360,20 @@ class DiffusionModelEncoder_ansio(nn.Module):
         output4 = self.out4(vector_list[4])
         output_cat = torch.cat((output0,output1,output2,output3,output4), dim=1)
         # output_cat = torch.cat((output1,output2), dim=1)
-        # output = self.linear_1(output_cat)
-        # output = self.last_dropout(output_cat)
         output = self.linear(output_cat)
-        # output = self.linear_2(output)
-        
-        '''
-        # output = self.linear(output2)
 
+        # output = self.linear(output2)
+        '''
+        #1536_ver
+        output0 = self.out0(vector_list[0])
+        output1 = self.out1(vector_list[1])
+        output2 = self.out2(vector_list[2])
+        output3 = self.out3(vector_list[3])
+        output_cat = torch.cat((output0,output1,output2,output3), dim=1)
+        # output_cat = torch.cat((output0,output1,output2), dim=1)
+        # output_cat = torch.cat((output1,output2), dim=1)
+        output = self.linear(output_cat)
+            '''
         #1024_ver
         '''
         output1 = self.out1(vector_list[1])
@@ -2376,21 +2381,9 @@ class DiffusionModelEncoder_ansio(nn.Module):
         output_cat = torch.cat((output1,output2), dim=1)
         output = self.linear(output_cat)
         '''
-        
-        # '''
-        # 512_ver
-        output2 = self.out2(vector_list[2])
-        output = self.linear(output2)
-        # '''
-        
-        # output_cat = torch.cat((output1,output2,output3,output4), dim=1)
-        # output4 = self.out4(h)
-        # output_cat = self.last_dropout(output_cat)
-        # output = self.linear(output4)
-        # output5 = self.out5(vector_list[5])
-        
-        # latent_list = [output0, output1, output2, output3, output4]
-        # latent_list = [output0, output1, output2, output3]
+        #512_ver
+        # output2 = self.out2(vector_list[2])
+        # output = self.linear(output2)
         
         # return latent_list
         return output

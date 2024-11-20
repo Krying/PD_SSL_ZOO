@@ -2,7 +2,6 @@ import os
 import sys
 sys.path.append(os.path.abspath('/workspace/PD_SSL_ZOO/UPSTREAM/3_DDAE'))
 
-import ast
 import torch
 import argparse
 import torch.nn.parallel
@@ -12,9 +11,6 @@ from data_utils import get_loader
 import torch.utils.data.distributed
 from trainer_simple_diffusion import Trainer, GaussianDiffusion
 
-def args_as_list(s):
-    v = ast.literal_eval(s)
-    return v
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -26,18 +22,13 @@ def str2bool(v):
 
 parser = argparse.ArgumentParser(description='DDAE upstream')
 parser.add_argument('--amp', default=0, type=int)
-parser.add_argument('--resume', default=0, type=int)
-parser.add_argument('--max', default=1.0, type=float)
 parser.add_argument('--model', default='ddpm', type=str)
 parser.add_argument('--batch_size', default=1, type=int)
-parser.add_argument('--max_epochs', default=20, type=int)
-parser.add_argument('--val_interval', default=2, type=int)
-parser.add_argument('--image_size', default=256, type=int)
+parser.add_argument('--image_size', default=192, type=int)
 parser.add_argument('--optim_lr', default=2e-5, type=float)
 parser.add_argument('--max_grad_norm', default=1., type=float)
 parser.add_argument('--train_num_steps', default=600000, type=int)
 parser.add_argument('--split_batches', default=True, type=str2bool)
-parser.add_argument('--scheduler', default='ddpm_linear', type=str)
 parser.add_argument('--cuda_visible_devices', default='0', type=str)
 parser.add_argument('--save_and_sample_every', default=5000, type=int)
 parser.add_argument('--gradient_accumulate_every', default=1, type=int)

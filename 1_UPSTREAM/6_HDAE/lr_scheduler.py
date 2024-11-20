@@ -3,30 +3,6 @@ import math
 import functools
 from torch.optim.lr_scheduler import _LRScheduler
 
-def poly_learning_rate(epoch, warm_up_epoch, start_decay_epoch, total_epoch, min_lr):
-    # Linear Warmup
-    if (epoch < warm_up_epoch):
-        return max(0, epoch / warm_up_epoch)
-    else :
-        lr = 1.0 - max(0, epoch - start_decay_epoch) /(float(total_epoch) - start_decay_epoch)
-
-        if lr <= min_lr:
-            lr = min_lr
-
-    return lr
-
-def lambda_rule(epoch, warmup_epoch, start_decay_epoch, total_epoch, init_warmup_lr, init_lr, min_lr):
-    # Linear WarmUP
-    if (epoch < warmup_epoch):
-        return max(init_warmup_lr / init_lr, epoch / warmup_epoch)
-    else :
-        lr_ratio = 1.0 - max(0, epoch - start_decay_epoch) /(float(total_epoch) - start_decay_epoch)
-
-        if init_lr*lr_ratio <= min_lr:
-            lr_ratio = min_lr / init_lr
-
-        return lr_ratio
-
 class CosineAnnealingWarmUpRestarts(_LRScheduler):
     def __init__(self, optimizer, T_0, T_mult=1, eta_max=0.1, T_up=0, gamma=1., last_epoch=-1):
         if T_0 <= 0 or not isinstance(T_0, int):
@@ -81,21 +57,3 @@ class CosineAnnealingWarmUpRestarts(_LRScheduler):
         self.last_epoch = math.floor(epoch)
         for param_group, lr in zip(self.optimizer.param_groups, self.get_lr()):
             param_group['lr'] = lr
-
-def create_scheduler(name, optimizer, args):
-    if name == 'poly_lr':
-        lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, 
-                                                         lr_lambda=functools.partial(poly_learning_rate, 
-                                                                                     warm_up_epoch=args.warm_up_epoch, 
-                                                                                     start_decay_epoch=args.start_decay_epoch, 
-                                                                                     total_epoch=args.max_epochs, 
-                                                                                     min_lr=1e-6))
-
-    elif name == 'cosine_annealing_warm_restart':
-        lr_scheduler = CosineAnnealingWarmUpRestarts(optimizer, 
-                                                     T_0=args.max_epochs, 
-                                                     T_mult=1, 
-                                                     eta_max=args.optim_lr,  
-                                                     T_up=args.warm_up_epoch)
-
-    return lr_scheduler

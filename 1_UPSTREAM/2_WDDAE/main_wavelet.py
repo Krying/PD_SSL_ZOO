@@ -2,17 +2,12 @@ import os
 import sys
 sys.path.append(os.path.abspath('/workspace/PD_SSL_ZOO/UPSTREAM/2_WDDAE'))
 
-import ast
 import torch
 import argparse
 from monai.utils import misc
 from model import create_model
 from data_utils import get_loader
 from trainer_simple_diffusion_wavelet import Trainer, GaussianDiffusion
-
-def args_as_list(s):
-    v = ast.literal_eval(s)
-    return v
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -24,12 +19,9 @@ def str2bool(v):
 
 parser = argparse.ArgumentParser(description='WDDAE upstream')
 parser.add_argument('--amp', default=0, type=int)
-parser.add_argument('--max', default=1.0, type=float)
-parser.add_argument('--residual', default=2, type=int)
 parser.add_argument('--batch_size', default=2, type=int)
 parser.add_argument('--max_epochs', default=20, type=int)
-parser.add_argument('--image_size', default=256, type=int)
-parser.add_argument('--val_interval', default=2, type=int)
+parser.add_argument('--image_size', default=192, type=int)
 parser.add_argument('--optim_lr', default=2e-5, type=float)
 parser.add_argument('--max_grad_norm', default=1., type=float)
 parser.add_argument('--train_num_steps', default=800000, type=int)

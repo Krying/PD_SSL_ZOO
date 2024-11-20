@@ -151,14 +151,13 @@ def save_image(pred, phase, args, epoch):
     sitk.WriteImage(save_pred, f"{args.img_save_dir}/{phase}_{epoch}_pred.nii.gz")
 
 
-def run_ddpm_hdae_training_ddpm(model,
-                                train_loader,
-                                val_loader,
-                                optimizer,
-                                lr_scheduler,
-                                args,
-                                ):
-    val_loss_max = 1.
+def run_training_hdae(model,
+                      train_loader,
+                      val_loader,
+                      optimizer,
+                      lr_scheduler,
+                      args,
+                      ):
 
     scheduler = DDPMScheduler(num_train_timesteps=1000, 
                               schedule="scaled_linear_beta", 
@@ -208,10 +207,5 @@ def run_ddpm_hdae_training_ddpm(model,
                                                  args=args
                                                  )
 
-            print('Final validation  {}/{}'.format(epoch, args.max_epochs - 1),
-                'val_loss', epoch_val_loss)
-
-        print('Training Finished !, Best Accuracy: ', val_loss_max)
-
-    return val_loss_max
+    return epoch_val_loss
 

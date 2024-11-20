@@ -10,7 +10,8 @@ import SimpleITK as sitk
 from monai.utils import misc
 from model import create_model
 from data_utils import get_loader
-from trainer_ddpm_hdae import run_ddpm_hdae_training_ddpm
+from lr_scheduler import CosineAnnealingWarmUpRestarts
+from trainer_ddpm_hdae import run_training_hdae
 
 def args_as_list(s):
     v = ast.literal_eval(s)
@@ -25,22 +26,12 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 parser = argparse.ArgumentParser(description='HDAE upstream')
-parser.add_argument('--avg', default=1, type=int)
-parser.add_argument('--depth', default=4, type=int)
-parser.add_argument('--dim', default='3D', type=str)
-parser.add_argument('--resume', default=0, type=int)
-parser.add_argument('--max', default=1.0, type=float)
 parser.add_argument('--model', default='HDAE', type=str)
 parser.add_argument('--batch_size', default=2, type=int)
-parser.add_argument('--infer_start', default=0, type=int)
-parser.add_argument('--image_size', default=256, type=int)
 parser.add_argument('--max_epochs', default=300, type=int)
-parser.add_argument('--optim_lr', default=4e-5, type=float)
 parser.add_argument('--val_interval', default=2, type=int)
-parser.add_argument('--infer_step', default=1000, type=int)
-parser.add_argument('--latent_size', default=512, type=int)
-parser.add_argument('--lr_scheduler', default='cos_ann', type=str)
-parser.add_argument('--scheduler', default='ddpm_linear', type=str)
+parser.add_argument('--eta_max', default=4e-5, type=float)
+parser.add_argument('--optim_lr', default=2e-5, type=float)
 parser.add_argument('--cuda_visible_devices', default='0', type=str)
 parser.add_argument('--log_dir', default='/workspace/PD_SSL_ZOO/UPSTREAM/6_HDAE/results')
 parser.add_argument('--img_save_dir', default='/workspace/PD_SSL_ZOO/UPSTREAM/6_HDAE/results')
@@ -55,16 +46,15 @@ def main():
     main_worker_enc(args=args)
 
 def main_worker_enc(args):
-    os.makedirs(args.log_dir + '/' + f'_model_{args.model}'+ str(args.optim_lr) + f'_{args.description}', exist_ok=True)
-    os.makedirs(args.img_save_dir + '/' + f'_model_{args.model}'+ str(args.optim_lr) + f'_{args.description}', exist_ok=True)
-    args.log_dir = args.log_dir + '/' + f'_model_{args.model}'+ str(args.optim_lr) + f'_{args.description}'
-    args.img_save_dir = args.img_save_dir + '/' + f'_model_{args.model}'+ str(args.optim_lr) + f'_{args.description}'
+    args.log_dir = args.log_dir + '/' + str(args.optim_lr) + f'_model_{args.model}'
+    args.img_save_dir = args.log_dir
+    os.makedirs(args.log_dir, exist_ok=True)
     
     device = torch.device('cuda')
     torch.backends.cudnn.benchmark = True
     args.test_mode = False
 
-    loader, train_real = get_loader(args)
+    loader = get_loader(args)
 
     model = create_model(args)
 
@@ -78,15 +68,15 @@ def main_worker_enc(args):
     print(f"learnig_rate : {args.optim_lr}")
 
     optimizer = torch.optim.AdamW(params=model.parameters(), lr=args.optim_lr, weight_decay=0.05)
-    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.max_epochs, eta_min=2e-5)
+    lr_scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=300, T_mult=1, eta_max=args.eta_max, T_up=1)
 
-    accuracy = run_ddpm_hdae_training_ddpm(model,
-                                           train_loader=loader[0],
-                                           val_loader=loader[1],
-                                           optimizer=optimizer,
-                                           lr_scheduler=lr_scheduler,
-                                           args=args,
-                                           )
+    accuracy = run_training_hdae(model,
+                                 train_loader=loader[0],
+                                 val_loader=loader[1],
+                                 optimizer=optimizer,
+                                 lr_scheduler=lr_scheduler,
+                                 args=args,
+                                 )
             
 
     return accuracy

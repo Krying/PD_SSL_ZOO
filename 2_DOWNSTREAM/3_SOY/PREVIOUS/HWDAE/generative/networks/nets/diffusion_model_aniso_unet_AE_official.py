@@ -728,15 +728,7 @@ class ResnetBlock(nn.Module):
                 conv_only=True,
                 groups=1
             )
-            # Convolution(
-            #     spatial_dims=spatial_dims,
-            #     in_channels=self.out_channels,
-            #     out_channels=self.out_channels,
-            #     strides=1,
-            #     kernel_size=3,
-            #     padding=1,
-            #     conv_only=True,
-            # )
+
         )
 
         if self.out_channels == in_channels:
@@ -752,15 +744,6 @@ class ResnetBlock(nn.Module):
                 conv_only=True,
                 groups=1
             )
-            # self.skip_connection = Convolution(
-            #     spatial_dims=spatial_dims,
-            #     in_channels=in_channels,
-            #     out_channels=self.out_channels,
-            #     strides=1,
-            #     kernel_size=1,
-            #     padding=0,
-            #     conv_only=True,
-            # )
 
         self.drop_out = nn.Dropout(0.1)
 
@@ -2093,42 +2076,6 @@ class DiffusionModelUNet_aniso_AE(nn.Module):
                 )
             ),
         )
-        # self.out2 = nn.Sequential(
-        #     # nn.GroupNorm(num_groups=norm_num_groups, num_channels=num_channels[1], eps=norm_eps, affine=True),
-        #     nn.GroupNorm(num_groups=norm_num_groups, num_channels=num_channels[2], eps=norm_eps, affine=True),
-        #     nn.SiLU(),
-        #     zero_module(
-        #         Convolution(
-        #             spatial_dims=spatial_dims,
-        #             # in_channels=num_channels[1],
-        #             in_channels=num_channels[2],
-        #             out_channels=out_channels,
-        #             strides=1,
-        #             kernel_size=3,
-        #             padding=1,
-        #             conv_only=True,
-        #         )
-        #     ),
-        # )
-
-        # self.out3 = nn.Sequential(
-        #     # nn.GroupNorm(num_groups=norm_num_groups, num_channels=num_channels[2], eps=norm_eps, affine=True),
-        #     nn.GroupNorm(num_groups=norm_num_groups, num_channels=num_channels[3], eps=norm_eps, affine=True),
-        #     nn.SiLU(),
-        #     zero_module(
-        #         Convolution(
-        #             spatial_dims=spatial_dims,
-        #             # in_channels=num_channels[2],
-        #             in_channels=num_channels[3],
-        #             out_channels=out_channels,
-        #             strides=1,
-        #             kernel_size=3,
-        #             padding=1,
-        #             conv_only=True,
-        #         )
-        #     ),
-        # )
-
 
     def forward(
         self,
@@ -2355,7 +2302,9 @@ class DiffusionModelEncoder_ansio(nn.Module):
         #192 -> 96 -> 48 -> 24 -> 12
         self.out0 = nn.Sequential(normalization(num_channels[0]), nn.SiLU(), nn.Dropout(0.1), nn.AdaptiveAvgPool3d((8,8,4)), nn.Flatten(), nn.Linear(num_channels[0]*8*8*4, 512))
         self.out1 = nn.Sequential(normalization(num_channels[0]), nn.SiLU(), nn.Dropout(0.1), nn.AdaptiveAvgPool3d((4,4,4)), nn.Flatten(), nn.Linear(num_channels[0]*4*4*4, 512))
+        
         self.out2 = nn.Sequential(normalization(num_channels[1]), nn.SiLU(), nn.Dropout(0.1), nn.AdaptiveAvgPool3d((3,3,3)), nn.Flatten(), nn.Linear(num_channels[1]*3*3*3, 512))
+        
         self.out3 = nn.Sequential(normalization(num_channels[2]), nn.SiLU(), nn.Dropout(0.1), nn.AdaptiveAvgPool3d((2,2,2)), nn.Flatten(), nn.Linear(num_channels[2]*2*2*2, 512))
         self.out4 = nn.Sequential(normalization(num_channels[3]), nn.SiLU(), nn.Dropout(0.1), nn.AdaptiveAvgPool3d((1,1,1)), nn.Flatten(), nn.Linear(num_channels[3]*1*1*1, 512))
 
@@ -2369,8 +2318,8 @@ class DiffusionModelEncoder_ansio(nn.Module):
         # self.out2 = nn.Sequential(normalization(num_channels[2]), nn.SiLU(), nn.Dropout(0.1), nn.AdaptiveAvgPool3d((2,2,2)), nn.Flatten(), nn.Linear(num_channels[2]*2*2*2, 512))
         # self.out3 = nn.Sequential(normalization(num_channels[3]), nn.SiLU(), nn.Dropout(0.1), nn.AdaptiveAvgPool3d((1,1,1)), nn.Flatten(), nn.Linear(num_channels[3]*1*1*1, 512))
 
-        self.linear = nn.Linear(512, 1)
-
+        # self.last_dropout = nn.Dropout(0.1)
+        self.linear = nn.Linear(512, 2)
     def forward(
         self,
         x: torch.Tensor,
@@ -2399,15 +2348,42 @@ class DiffusionModelEncoder_ansio(nn.Module):
         for downsample_block in self.down_blocks:
             idx+=1
             h, _ = downsample_block(hidden_states=h, temb=None, context=context)
+            # print(f'{idx}th output shape : {h.shape}')
             vector_list.append(h)
 
+        #full_ver
+        
         output0 = self.out0(vector_list[0])
         output1 = self.out1(vector_list[1])
         output2 = self.out2(vector_list[2])
         output3 = self.out3(vector_list[3])
         output4 = self.out4(vector_list[4])
-        
         output_cat = torch.cat((output0,output1,output2,output3,output4), dim=1)
+        # output_cat = torch.cat((output1,output2), dim=1)
         output = self.linear(output_cat)
 
+        # output = self.linear(output2)
+        '''
+        #1536_ver
+        output0 = self.out0(vector_list[0])
+        output1 = self.out1(vector_list[1])
+        output2 = self.out2(vector_list[2])
+        output3 = self.out3(vector_list[3])
+        output_cat = torch.cat((output0,output1,output2,output3), dim=1)
+        # output_cat = torch.cat((output0,output1,output2), dim=1)
+        # output_cat = torch.cat((output1,output2), dim=1)
+        output = self.linear(output_cat)
+            '''
+        #1024_ver
+        '''
+        output1 = self.out1(vector_list[1])
+        output2 = self.out2(vector_list[2])
+        output_cat = torch.cat((output1,output2), dim=1)
+        output = self.linear(output_cat)
+        '''
+        #512_ver
+        # output2 = self.out2(vector_list[2])
+        # output = self.linear(output2)
+        
+        # return latent_list
         return output

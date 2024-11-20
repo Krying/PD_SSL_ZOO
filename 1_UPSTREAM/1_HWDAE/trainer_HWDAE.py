@@ -1,15 +1,15 @@
-from generative.networks.schedulers import DDPMScheduler
-from generative.inferers import DiffusionInferer_ae
-import torch.nn.functional as F
-from ema_pytorch import EMA
-from einops import reduce
-import SimpleITK as sitk
-from pathlib import Path
-from tqdm import tqdm
-import torch
+import os
+import json
 import pywt
 import ptwt
-import os
+import torch
+from tqdm import tqdm
+import SimpleITK as sitk
+from pathlib import Path
+from ema_pytorch import EMA
+import torch.nn.functional as F
+from generative.inferers import DiffusionInferer_ae
+from generative.networks.schedulers import DDPMScheduler
 
 def train_HWDAE_epoch(model,
                       ema_model,
@@ -142,7 +142,7 @@ def val_HWDAE_epoch(model,
         
         save_image(reconstruction, 'val', args, epoch)
         
-        if epoch>100 and epoch%2==0:
+        if epoch>100 and epoch%args.val_interval==0:
             image_pred = inferer.sample(input_noise=image, 
                                         diffusion_model=ema_model.ema_model.unet, 
                                         scheduler=scheduler, 
@@ -193,16 +193,13 @@ def save_image(pred, phase, args, epoch):
     save_pred = sitk.GetImageFromArray(pred_img)
     sitk.WriteImage(save_pred, f"{args.img_save_dir}/{phase}_{epoch}_pred.nii.gz")
 
-import json
-import shutil
-def run_ddpm_oriAE_training_ddpm(model,
-                                 train_loader,
-                                 val_loader,
-                                 optimizer,
-                                 lr_scheduler,
-                                 args,
-                                 ):
-    val_loss_max = 1.
+def run_training_hwdae(model,
+                       train_loader,
+                       val_loader,
+                       optimizer,
+                       lr_scheduler,
+                       args,
+                       ):
 
     scheduler = DDPMScheduler(num_train_timesteps=1000, 
                               schedule="linear_beta", 
@@ -211,20 +208,12 @@ def run_ddpm_oriAE_training_ddpm(model,
 
     inferer = DiffusionInferer_ae(scheduler)
 
-    n_epochs = args.max_epochs
-   
     ema_model = EMA(model, 
                     beta=0.995, 
                     update_after_step=15000,
                     update_every=10)
     
-    if args.resume:
-        a_path = '/workspace/DIF_HWDAE_PET/model_178_final.pt'
-        weight = torch.load(a_path, map_location='cpu')
-        model.load_state_dict(weight['state_dict'], strict=False)
-        print(a_path)
-
-    for epoch in range(0, n_epochs):
+    for epoch in range(0, args.max_epochs):
         epoch_tr_loss = train_HWDAE_epoch(model,
                                           ema_model,
                                           inferer,
@@ -240,13 +229,12 @@ def run_ddpm_oriAE_training_ddpm(model,
         print(f"lr : {lr}")
         lr_scheduler.step()
 
-        b_new_best = False
-        if (epoch) % 2 == 0:
+        if (epoch) % args.val_interval == 0:
             save_checkpoint(model,
                             ema_model,
                             epoch,
                             args.log_dir,
-                            filename=f'model_{epoch}_final.pt',
+                            filename=f'model_{epoch}.pt',
                             optimizer=optimizer,
                             scheduler=lr_scheduler)
             
@@ -259,10 +247,6 @@ def run_ddpm_oriAE_training_ddpm(model,
                                              args=args
                                              )
 
-            print('Final validation  {}/{}'.format(epoch, args.max_epochs - 1),
-                'val_loss', epoch_val_loss)
 
-        print('Training Finished !, Best Accuracy: ', val_loss_max)
-
-    return val_loss_max
+    return epoch_val_loss
 

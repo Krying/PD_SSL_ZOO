@@ -1,12 +1,10 @@
-from generative.inferers import DiffusionInferer
 from generative.networks.nets.diffusion_model_aniso_unet import DiffusionModelUNet_aniso
-import torch
 
 def create_model(args): 
     if args.model == 'ddpm':
         model =  DiffusionModelUNet_aniso(spatial_dims=3,
-                                          in_channels=1, #wavelet mode
-                                          out_channels=1, #wavelet mode
+                                          in_channels=1, 
+                                          out_channels=1, 
                                           num_channels=[16,32,64,128,256],
                                           attention_levels=[False,False,False,False,True],
                                           num_head_channels=[0,0,0,0,32],

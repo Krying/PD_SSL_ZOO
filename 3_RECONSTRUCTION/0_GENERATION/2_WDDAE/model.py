@@ -1,6 +1,4 @@
-from generative.inferers import DiffusionInferer
 from generative.networks.nets.diffusion_model_aniso_unet import DiffusionModelUNet_aniso
-import torch
 
 def create_model(args): 
     if args.model == 'ddpm':

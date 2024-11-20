@@ -16,8 +16,8 @@ def create_model(args):
 
     elif args.model == 'wddpm':
         model =  DiffusionModelUNet_aniso(spatial_dims=3,
-                                          in_channels=8, #wavelet mode
-                                          out_channels=8, #wavelet mode
+                                          in_channels=8, #wavelet
+                                          out_channels=8, #wavelet
                                           num_channels=[128,128,256,512],
                                           attention_levels=[False,False,False,True],
                                           num_head_channels=[0,0,0,32],

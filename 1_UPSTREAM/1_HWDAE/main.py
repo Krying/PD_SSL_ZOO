@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.abspath('/workspace/DIF_HWDAE_PET'))
+sys.path.append(os.path.abspath('/workspace/PD_SSL_ZOO/1_UPSTREAM/1_HWDAE'))
 
 import ast
 import torch
@@ -19,8 +19,8 @@ parser.add_argument('--val_interval', default=2, type=int)
 parser.add_argument('--optim_lr', default=2e-5, type=float)
 parser.add_argument('--eta_max', default=4e-5, type=float)
 parser.add_argument('--cuda_visible_devices', default='0', type=str)
-parser.add_argument('--log_dir', default='/workspace/PD_SSL_ZOO/UPSTREAM/1_HWDAE/results')
-parser.add_argument('--img_save_dir', default='/workspace/PD_SSL_ZOO/UPSTREAM/1_HWDAE/results')
+parser.add_argument('--log_dir', default='/workspace/PD_SSL_ZOO/1_UPSTREAM/1_HWDAE/results')
+parser.add_argument('--img_save_dir', default='/workspace/PD_SSL_ZOO/1_UPSTREAM/1_HWDAE/results')
 
 def main():
     args = parser.parse_args()
@@ -32,12 +32,10 @@ def main():
     main_worker_enc(args=args)
 
 def main_worker_enc(args):
-    os.makedirs(args.log_dir + '/' + f'model_{args.model}_'+ str(args.optim_lr), exist_ok=True)
-    os.makedirs(args.img_save_dir + '/' + f'model_{args.model}_'+ str(args.optim_lr), exist_ok=True)
-    
     args.log_dir = args.log_dir + '/' + f'model_{args.model}_'+ str(args.optim_lr)
-    args.img_save_dir = args.img_save_dir + '/' + f'model_{args.model}_'+ str(args.optim_lr)
-    
+    args.img_save_dir = args.log_dir
+    os.makedirs(args.log_dir, exist_ok=True)
+
     device = torch.device('cuda')
     torch.backends.cudnn.benchmark = True
     

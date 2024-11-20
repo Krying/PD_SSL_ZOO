@@ -499,7 +499,6 @@ class Generator(nn.Module):
             ind = 1
         )
 
-        #V3
         block_2 = GeneratorBlock(
             latent_dim,
             input_channels=512,

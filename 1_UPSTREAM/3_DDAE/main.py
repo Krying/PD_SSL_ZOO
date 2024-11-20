@@ -4,13 +4,10 @@ sys.path.append(os.path.abspath('/workspace/PD_SSL_ZOO/UPSTREAM/3_DDAE'))
 
 import torch
 import argparse
-import torch.nn.parallel
 from monai.utils import misc
 from model import create_model
 from data_utils import get_loader
-import torch.utils.data.distributed
 from trainer_simple_diffusion import Trainer, GaussianDiffusion
-
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -27,21 +24,20 @@ parser.add_argument('--batch_size', default=1, type=int)
 parser.add_argument('--image_size', default=192, type=int)
 parser.add_argument('--optim_lr', default=2e-5, type=float)
 parser.add_argument('--max_grad_norm', default=1., type=float)
-parser.add_argument('--train_num_steps', default=600000, type=int)
+parser.add_argument('--train_num_steps', default=480000, type=int)
 parser.add_argument('--split_batches', default=True, type=str2bool)
 parser.add_argument('--cuda_visible_devices', default='0', type=str)
 parser.add_argument('--save_and_sample_every', default=5000, type=int)
 parser.add_argument('--gradient_accumulate_every', default=1, type=int)
-parser.add_argument('--log_dir', default='/workspace/PD_SSL_ZOO/UPSTREAM/3_DDAE/results')
-parser.add_argument('--img_save_dir', default='/workspace/PD_SSL_ZOO/UPSTREAM/3_DDAE/results')
-
+parser.add_argument('--log_dir', default='/workspace/PD_SSL_ZOO/1_UPSTREAM/3_DDAE/results')
+parser.add_argument('--img_save_dir', default='/workspace/PD_SSL_ZOO/1_UPSTREAM/3_DDAE/results')
 
 def main():
     args = parser.parse_args()
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda_visible_devices
     args.logdir = args.log_dir
-    misc.set_determinism(seed=2023)
+    misc.set_determinism(seed=2024)
     
     main_worker_enc(args=args)
 
@@ -65,13 +61,13 @@ def main_worker_enc(args):
     print(f"learnig_rate : {args.optim_lr}")
 
     diffusion = GaussianDiffusion(model = model,
-                                  image_size = 128,
-                                  noise_d = 64,
+                                  image_size = 192,
+                                  noise_d = 96,
                                   num_sample_steps = 1000)
 
     trainer = Trainer(diffusion,
-                       loader,
-                       args)
+                      loader,
+                      args)
 
     trainer.train(args)
 

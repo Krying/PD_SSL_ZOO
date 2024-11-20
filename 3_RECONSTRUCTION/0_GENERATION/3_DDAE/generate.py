@@ -17,7 +17,7 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-parser = argparse.ArgumentParser(description='DDAE upstream')
+parser = argparse.ArgumentParser(description='DDAE unconditional PET scans generation')
 parser.add_argument('--amp', default=0, type=int)
 parser.add_argument('--model', default='ddpm', type=str)
 parser.add_argument('--batch_size', default=1, type=int)
@@ -29,8 +29,8 @@ parser.add_argument('--split_batches', default=True, type=str2bool)
 parser.add_argument('--cuda_visible_devices', default='0', type=str)
 parser.add_argument('--save_and_sample_every', default=5000, type=int)
 parser.add_argument('--gradient_accumulate_every', default=1, type=int)
-parser.add_argument('--log_dir', default='/workspace/PD_SSL_ZOO/UPSTREAM/3_DDAE/results')
-parser.add_argument('--img_save_dir', default='/workspace/PD_SSL_ZOO/UPSTREAM/3_DDAE/results')
+parser.add_argument('--log_dir', default='/workspace/PD_SSL_ZOO/3_RECONSTRUCTION/0_GENERATION/3_DDAE/results')
+parser.add_argument('--img_save_dir', default='/workspace/PD_SSL_ZOO/3_RECONSTRUCTION/0_GENERATION/3_DDAE/results')
 
 def main():
     args = parser.parse_args()
@@ -42,10 +42,6 @@ def main():
     main_worker_enc(args=args)
 
 def main_worker_enc(args):
-    args.log_dir = args.log_dir + '/' + str(args.optim_lr) + f'_model_{args.model}'
-    args.img_save_dir = args.log_dir
-    os.makedirs(args.log_dir, exist_ok=True)
-    
     device = torch.device('cuda')
     torch.backends.cudnn.benchmark = True
     args.test_mode = False
@@ -66,10 +62,12 @@ def main_worker_enc(args):
                                   num_sample_steps = 1000)
 
     trainer = Trainer(diffusion,
-                       loader,
-                       args)
+                      loader,
+                      args)
 
-    trainer.train(args)
+    #For unconditional PET scan generation
+    trainer.load_for_generation()
+    trainer.generation(200)
 
 if __name__ == '__main__':
     main()

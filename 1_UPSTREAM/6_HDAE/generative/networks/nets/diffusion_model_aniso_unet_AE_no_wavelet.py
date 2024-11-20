@@ -520,15 +520,7 @@ class Downsample(nn.Module):
                     conv_only=True,
                     groups=1
                 )
-                # self.op = Convolution(
-                #     spatial_dims=spatial_dims,
-                #     in_channels=self.num_channels,
-                #     out_channels=self.out_channels,
-                #     strides=2,
-                #     kernel_size=3,
-                #     padding=padding,
-                #     conv_only=True,
-                # )
+
             else:
                 self.op = Convolution(
                     spatial_dims=spatial_dims,
@@ -541,16 +533,7 @@ class Downsample(nn.Module):
                     conv_only=True,
                     groups=1
                 )
-                # self.op = Convolution(
-                #     spatial_dims=spatial_dims,
-                #     in_channels=self.num_channels,
-                #     out_channels=self.out_channels,
-                #     strides=(2, 2, 1),
-                #     kernel_size=3,
-                #     # padding=padding,
-                #     padding=padding,
-                #     conv_only=True,
-                # )
+
         else:
             if self.num_channels != self.out_channels:
                 raise ValueError("num_channels and out_channels must be equal when use_conv=False")
@@ -599,15 +582,7 @@ class Upsample(nn.Module):
                 conv_only=True,
                 groups=1
             )
-            # self.conv = Convolution(
-            #     spatial_dims=spatial_dims,
-            #     in_channels=self.num_channels,
-            #     out_channels=self.out_channels,
-            #     strides=1,
-            #     kernel_size=3,
-            #     padding=padding,
-            #     conv_only=True,
-            # )
+
         else:
             self.conv = None
 
@@ -687,15 +662,6 @@ class ResnetBlock(nn.Module):
             conv_only=True,
             groups=1
         )
-        # self.conv1 = Convolution(
-        #     spatial_dims=spatial_dims,
-        #     in_channels=in_channels,
-        #     out_channels=self.out_channels,
-        #     strides=1,
-        #     kernel_size=3,
-        #     padding=1,
-        #     conv_only=True,
-        # )
 
         self.upsample = self.downsample = None
         if self.up:
@@ -727,15 +693,6 @@ class ResnetBlock(nn.Module):
                 conv_only=True,
                 groups=1
             )
-            # Convolution(
-            #     spatial_dims=spatial_dims,
-            #     in_channels=self.out_channels,
-            #     out_channels=self.out_channels,
-            #     strides=1,
-            #     kernel_size=3,
-            #     padding=1,
-            #     conv_only=True,
-            # )
         )
 
         if self.out_channels == in_channels:
@@ -751,15 +708,6 @@ class ResnetBlock(nn.Module):
                 conv_only=True,
                 groups=1
             )
-            # self.skip_connection = Convolution(
-            #     spatial_dims=spatial_dims,
-            #     in_channels=in_channels,
-            #     out_channels=self.out_channels,
-            #     strides=1,
-            #     kernel_size=1,
-            #     padding=0,
-            #     conv_only=True,
-            # )
 
         self.drop_out = nn.Dropout(0.1)
 
@@ -820,11 +768,8 @@ class ResnetBlock(nn.Module):
             # condition scale bias could be a list
             biases = [scale_bias] * len(scale_shifts)
             
-        # h = h + temb
-        
         #GN
         h = self.norm2(h)
-        # print(f'for conditioning h.shape : {h.shape}')
         #only for diffusion model
         if self.emb_channels is not None:
             # scale and shift for each condition
@@ -1416,13 +1361,12 @@ class UpBlock(nn.Module):
         context: torch.Tensor | None = None,
     ) -> torch.Tensor:
         del context
-        # res_idx = 0
+
         for resnet in self.resnets:
             # pop res hidden states
             res_hidden_states = res_hidden_states_list[-1]
             res_hidden_states_list = res_hidden_states_list[:-1]
-            # print(f"hidden_states.shape : {hidden_states.shape}")
-            # print(f"res_hidden_states.shape : {res_hidden_states.shape}")
+
             hidden_states = torch.cat([hidden_states, res_hidden_states], dim=1)
 
             hidden_states = resnet(hidden_states, temb, cond)
@@ -1433,7 +1377,6 @@ class UpBlock(nn.Module):
             else: #do not need to put cond, only just hidden and temb because just include conv
                 hidden_states = self.upsampler(hidden_states, temb)
                 
-        # res_idx += 1
         return hidden_states
 
 
@@ -1543,8 +1486,7 @@ class AttnUpBlock(nn.Module):
             # pop res hidden states
             res_hidden_states = res_hidden_states_list[-1]
             res_hidden_states_list = res_hidden_states_list[:-1]
-            # print(f"hidden_states.shape : {hidden_states.shape}")
-            # print(f"res_hidden_states.shape : {res_hidden_states.shape}")
+
             hidden_states = torch.cat([hidden_states, res_hidden_states], dim=1)
 
             hidden_states = resnet(hidden_states, temb, cond)
@@ -1556,7 +1498,6 @@ class AttnUpBlock(nn.Module):
             else: #do not need to put cond, only just hidden and temb because just include conv
                 hidden_states = self.upsampler(hidden_states, temb)
                 
-
         return hidden_states
 
 class CrossAttnUpBlock(nn.Module):
@@ -1749,10 +1690,7 @@ def get_down_block(
             norm_eps=norm_eps,
             add_downsample=add_downsample,
             resblock_updown=resblock_updown,
-            
         )
-
-
 
 def get_mid_block(
     spatial_dims: int,
@@ -2167,7 +2105,7 @@ class DiffusionModelUNet_aniso_AE_no_wavelet(nn.Module):
 
         # 3. initial convolution
         h = self.conv_in(x)
-        # print(f"init_shape : {h.shape}")
+
         # 4. down
         if context is not None and self.with_conditioning is False:
             raise ValueError("model should have with_conditioning = True if context is provided")
@@ -2175,11 +2113,11 @@ class DiffusionModelUNet_aniso_AE_no_wavelet(nn.Module):
         down_num = 0
         for downsample_block in self.down_blocks:
             h, res_samples = downsample_block(hidden_states=h, temb=emb, cond=cond[down_num], context=context)
-            # print(f"{down_num}_down_block_tensor.shape : {h.shape}")
+
             down_num += 1
             for residual in res_samples:
                 down_block_res_samples.append(residual)
-                # print(f"{down_num} residual_shape : {residual.shape}")
+
         # Additional residual conections for Controlnets
         if down_block_additional_residuals is not None:
             new_down_block_res_samples = ()
@@ -2193,7 +2131,7 @@ class DiffusionModelUNet_aniso_AE_no_wavelet(nn.Module):
 
         # 5. mid
         h = self.middle_block(hidden_states=h, temb=emb, cond=cond[-1], context=context)
-        # print(f"mid_block_tensor.shape : {h.shape}")
+
         # Additional residual conections for Controlnets
         if mid_block_additional_residual is not None:
             h = h + mid_block_additional_residual
@@ -2210,20 +2148,9 @@ class DiffusionModelUNet_aniso_AE_no_wavelet(nn.Module):
             
             if self.multi_res_loss:
                 h_list.append(h)
-            
-            
-            # for i in range(len(res_samples)):
-                # print(f"{i}th res_sample.shape : {res_samples[i].shape}")
-            # print(f"{up_num}_up_block_tensor.shape : {h.shape}")
 
         # 7. output block
-        if self.multi_res_loss:
-            h_1 = self.out1(h_list[-1])
-            h_2 = self.out2(h_list[-3])
-            h_3 = self.out3(h_list[-4])
-            h = [h_1, h_2, h_3]
-        else:
-            h = self.out1(h)
+        h = self.out1(h)
 
         return h
 
@@ -2386,14 +2313,12 @@ class DiffusionModelEncoder_ansio_no_wavelet(nn.Module):
         h = self.conv_in(x)
         vector_list.append(h)
         # 4. down
-        # print(f'{idx}th output shape : {h.shape}')
         if context is not None and self.with_conditioning is False:
             raise ValueError("model should have with_conditioning = True if context is provided")
         
         for downsample_block in self.down_blocks:
             idx+=1
             h, _ = downsample_block(hidden_states=h, temb=None, context=context)
-            # print(f'{idx}th output shape : {h.shape}')
             vector_list.append(h)
 
         output0 = self.out0(vector_list[0])
@@ -2403,7 +2328,6 @@ class DiffusionModelEncoder_ansio_no_wavelet(nn.Module):
         output4 = self.out4(vector_list[4])
         output5 = self.out5(vector_list[5])
         
-        # latent_list = [output0, output1, output2, output3]#, output4]
         latent_list = [output0, output1, output2, output3, output4, output5]
         
         return latent_list

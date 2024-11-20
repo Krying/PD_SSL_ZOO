@@ -766,11 +766,8 @@ class ResnetBlock(nn.Module):
             # condition scale bias could be a list
             biases = [scale_bias] * len(scale_shifts)
             
-        # h = h + temb
-        
         #GN
         h = self.norm2(h)
-        # print(f'for conditioning h.shape : {h.shape}')
         #only for diffusion model
         if self.emb_channels is not None:
             # scale and shift for each condition
@@ -1367,8 +1364,7 @@ class UpBlock(nn.Module):
             # pop res hidden states
             res_hidden_states = res_hidden_states_list[-1]
             res_hidden_states_list = res_hidden_states_list[:-1]
-            # print(f"hidden_states.shape : {hidden_states.shape}")
-            # print(f"res_hidden_states.shape : {res_hidden_states.shape}")
+
             hidden_states = torch.cat([hidden_states, res_hidden_states], dim=1)
 
             hidden_states = resnet(hidden_states, temb, cond)
@@ -1489,8 +1485,7 @@ class AttnUpBlock(nn.Module):
             # pop res hidden states
             res_hidden_states = res_hidden_states_list[-1]
             res_hidden_states_list = res_hidden_states_list[:-1]
-            # print(f"hidden_states.shape : {hidden_states.shape}")
-            # print(f"res_hidden_states.shape : {res_hidden_states.shape}")
+
             hidden_states = torch.cat([hidden_states, res_hidden_states], dim=1)
 
             hidden_states = resnet(hidden_states, temb, cond)
@@ -2077,7 +2072,6 @@ class DiffusionModelUNet_aniso_AE(nn.Module):
 
         # 3. initial convolution
         h = self.conv_in(x)
-        # print(f"init_shape : {h.shape}")
         # 4. down
         if context is not None and self.with_conditioning is False:
             raise ValueError("model should have with_conditioning = True if context is provided")

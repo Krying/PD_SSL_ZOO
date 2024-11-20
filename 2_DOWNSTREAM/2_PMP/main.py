@@ -22,8 +22,6 @@ parser.add_argument("--batch_size", default=8, type=int)
 parser.add_argument("--min_lr", default=1e-6, type=float)
 parser.add_argument("--eta_max", default=1e-4, type=float)
 parser.add_argument("--max_epochs", default=150, type=int)
-parser.add_argument("--ckpt_path", default=None, type=str)
-parser.add_argument('--last_enc_ch', default=768, type=int)
 parser.add_argument("--optim_lr", default=5e-5, type=float)
 parser.add_argument("--warm_up_epoch", default=10, type=int)
 parser.add_argument("--start_decay_epoch", default=45, type=int)
@@ -49,21 +47,22 @@ def main():
         args.optim_lr = 1e-3
         args.batch_size = 6
         
+        print("PD/MSA/PSP LINEAR TRAIN START")
+        print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
+
         if args.data_per == 100:
-            print("PD/MSA/PSP LINEAR TRAIN START")
             args.max_epochs = 50
             args.warm_up_epoch = 10
 
             for i in range(5):
                 args.fold = i+1
-                print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
                 print(f"FOLD_{args.fold} TRAIN PROCESS START")
                 loaders = get_loader(args)
                 
                 args.test = 0
                 main_worker(args=args, loader=loaders)
                 
-                args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/test/"
+                args.log_dir = args.log_dir + f'test/'
                 args.log_dir_png = args.log_dir
                 os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
             
@@ -71,44 +70,51 @@ def main():
                 main_worker(args=args, loader=loaders)
 
         elif args.data_per == 25:
-            print("PD/MSA/PSP LINEAR TRAIN START")
             args.max_epochs = 200
             args.warm_up_epoch = 40
 
             for i in range(10):
                 args.fold = (i*2)+1
-                print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
                 print(f"FOLD_{args.fold} TRAIN PROCESS START")
                 loaders = get_loader(args)
                 
                 args.test = 0
                 main_worker(args=args, loader=loaders)
                 
+                args.log_dir = args.log_dir + f'test/'
+                args.log_dir_png = args.log_dir
+                os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
+
                 args.test = 1
                 main_worker(args=args, loader=loaders)
                 
 ##############################SCRATCH###############################
     elif args.linear_mode == 'scratch':
         args.optim_lr = 5e-5
-        args.batch_size = 6
-
-        args.down_type = 'PMP'
-        args.num_class = 3
-
+        if args.name in ['SimMIM', 'DisAE', 'P2S2P']:
+            args.batch_size = 3
+        elif args.name in [ 'HWDAE', 'WDDPM', 'DDAE']:
+            args.batch_size = 6
+            
+        print("PD/MSA/PSP SCRATCH TRAIN START")
+        print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
+        
         if args.data_per == 100:
-            print("PD/MSA/PSP SCRATCH TRAIN START")
             args.max_epochs = 100
             args.warm_up_epoch = 20
 
             for i in range(5):
                 args.fold = i+1
-                print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
                 print(f"FOLD_{args.fold} TRAIN PROCESS START")
                 loaders = get_loader(args)
 
                 args.test = 0
                 main_worker(args=args, loader=loaders)
                 
+                args.log_dir = args.log_dir + f'test/'
+                args.log_dir_png = args.log_dir
+                os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
+            
                 args.test = 1
                 main_worker(args=args, loader=loaders)
                 
@@ -118,35 +124,46 @@ def main():
             
             for i in range(10):
                 args.fold = (i*2)+1
-                print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
                 print(f"FOLD_{args.fold} TRAIN PROCESS START")
                 loaders = get_loader(args)
                 
                 args.test = 0
                 main_worker(args=args, loader=loaders)
-                
+            
+                args.log_dir = args.log_dir + f'test/'
+                args.log_dir_png = args.log_dir
+                os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
+            
                 args.test = 1
                 main_worker(args=args, loader=loaders)
                 
 ############################FINE_TUNING#############################
     elif args.linear_mode == 'fine_tuning':
         args.optim_lr = 5e-5
-        args.batch_size = 6
+        if args.name in ['SimMIM', 'DisAE', 'P2S2P']:
+            args.batch_size = 3
+        elif args.name in [ 'HWDAE', 'WDDPM', 'DDAE']:
+            args.batch_size = 6
+                    
+        print("PD/MSA/PSP FINE_TUNING TRAIN START")
+        print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
         
         if args.data_per == 100:
-            print("PD/MSA/PSP FINE_TUNING TRAIN START")
             args.max_epochs = 100
             args.warm_up_epoch = 20
         
             for i in range(5):
                 args.fold = i+1
-                print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
                 print(f"FOLD_{args.fold} TRAIN PROCESS START")
                 loaders = get_loader(args)
 
                 args.test = 0
                 main_worker(args=args, loader=loaders)
                 
+                args.log_dir = args.log_dir + f'test/'
+                args.log_dir_png = args.log_dir
+                os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
+            
                 args.test = 1
                 main_worker(args=args, loader=loaders)
                 
@@ -163,6 +180,10 @@ def main():
                 args.test = 0
                 main_worker(args=args, loader=loaders)
                 
+                args.log_dir = args.log_dir + f'test/'
+                args.log_dir_png = args.log_dir
+                os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
+            
                 args.test = 1
                 main_worker(args=args, loader=loaders)
 
@@ -178,7 +199,7 @@ def main_worker(args, loader):
 
     if args.test == 0:
         if args.linear_mode == 'linear':
-            if args.name in ['SIMMIM', 'DAE']:
+            if args.name in ['SimMIM', 'DisAE']:
                 n_parameters = sum(p.numel() for p in model.head.parameters() if p.requires_grad)
                 model.head.requires_grad_(True)
             else:
@@ -187,7 +208,7 @@ def main_worker(args, loader):
                 
             print('Number of Learnable Params:', n_parameters)
             
-            if args.name in ['SIMMIM', 'DAE']:
+            if args.name in ['SimMIM', 'DisAE']:
                 optimizer = torch.optim.AdamW(params=model.head.parameters(), lr=args.min_lr, weight_decay=0.05)
             else:
                 optimizer = torch.optim.AdamW(params=model.linear.parameters(), lr=args.optim_lr, weight_decay=0.05)

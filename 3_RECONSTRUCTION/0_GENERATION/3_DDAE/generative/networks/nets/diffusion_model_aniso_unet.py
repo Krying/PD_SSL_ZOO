@@ -751,11 +751,8 @@ class ResnetBlock(nn.Module):
             # condition scale bias could be a list
             biases = [scale_bias] * len(scale_shifts)
             
-        # h = h + temb
-        
         #GN
         h = self.norm2(h)
-        # print(f'for conditioning h.shape : {h.shape}')
         #only for diffusion model
         if self.emb_channels is not None:
             # scale and shift for each condition
@@ -1316,8 +1313,7 @@ class UpBlock(nn.Module):
             # pop res hidden states
             res_hidden_states = res_hidden_states_list[-1]
             res_hidden_states_list = res_hidden_states_list[:-1]
-            # print(f"hidden_states.shape : {hidden_states.shape}")
-            # print(f"res_hidden_states.shape : {res_hidden_states.shape}")
+
             hidden_states = torch.cat([hidden_states, res_hidden_states], dim=1)
 
             hidden_states = resnet(hidden_states, temb)
@@ -1432,8 +1428,7 @@ class AttnUpBlock(nn.Module):
             # pop res hidden states
             res_hidden_states = res_hidden_states_list[-1]
             res_hidden_states_list = res_hidden_states_list[:-1]
-            # print(f"hidden_states.shape : {hidden_states.shape}")
-            # print(f"res_hidden_states.shape : {res_hidden_states.shape}")
+
             hidden_states = torch.cat([hidden_states, res_hidden_states], dim=1)
 
             hidden_states = resnet(hidden_states, temb)
@@ -2012,14 +2007,13 @@ class DiffusionModelUNet_aniso(nn.Module):
         if context is not None and self.with_conditioning is False:
             raise ValueError("model should have with_conditioning = True if context is provided")
         down_block_res_samples: list[torch.Tensor] = [h]
-        down_num = 0
+
         for downsample_block in self.down_blocks:
             h, res_samples = downsample_block(hidden_states=h, temb=emb, context=context)
-            # print(f"{down_num}_down_block_tensor.shape : {h.shape}")
-            down_num += 1
+
             for residual in res_samples:
                 down_block_res_samples.append(residual)
-                # print(f"{down_num} residual_shape : {residual.shape}")
+
         # Additional residual conections for Controlnets
         if down_block_additional_residuals is not None:
             new_down_block_res_samples = ()
@@ -2033,21 +2027,16 @@ class DiffusionModelUNet_aniso(nn.Module):
 
         # 5. mid
         h = self.middle_block(hidden_states=h, temb=emb, context=context)
-        # print(f"mid_block_tensor.shape : {h.shape}")
+
         # Additional residual conections for Controlnets
         if mid_block_additional_residual is not None:
             h = h + mid_block_additional_residual
 
         # 6. up
-        up_num = 0
         for upsample_block in self.up_blocks:
             res_samples = down_block_res_samples[-len(upsample_block.resnets) :]
             down_block_res_samples = down_block_res_samples[: -len(upsample_block.resnets)]
             h = upsample_block(hidden_states=h, res_hidden_states_list=res_samples, temb=emb, context=context)
-            # for i in range(len(res_samples)):
-                # print(f"{i}th res_sample.shape : {res_samples[i].shape}")
-            # print(f"{up_num}_up_block_tensor.shape : {h.shape}")
-            up_num += 1
 
         # 7. output block
         h = self.out(h)

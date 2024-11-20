@@ -19,10 +19,8 @@ parser.add_argument('--test', default=0, type=int)
 parser.add_argument('--fold', default=None, type=int)
 parser.add_argument("--batch_size", default=8, type=int)
 parser.add_argument("--min_lr", default=1e-8, type=float)
-parser.add_argument("--eta_max", default=1e-4, type=float)
 parser.add_argument("--max_epochs", default=150, type=int)
-parser.add_argument("--ckpt_path", default=None, type=str)
-parser.add_argument('--last_enc_ch', default=768, type=int)
+parser.add_argument("--eta_max", default=1e-4, type=float)
 parser.add_argument("--optim_lr", default=5e-5, type=float)
 parser.add_argument("--warm_up_epoch", default=10, type=int)
 parser.add_argument("--start_decay_epoch", default=150, type=int)
@@ -45,13 +43,14 @@ def main():
     
 ###########################LINEAR_PROBING###########################
     if args.linear_mode == 'linear':
-        args.max_epochs = 30
-        args.warm_up_epoch = 10
-        
         args.optim_lr = 1e-3
         args.batch_size = 6
 
-        print(f"REG LINEAR {args.name} TRAIN START")
+        args.max_epochs = 30
+        args.warm_up_epoch = 10
+
+        print(f"REG LINEAR TRAIN START")
+        print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
 
         if args.data_per == 100:
             for i in range(5):
@@ -87,16 +86,18 @@ def main():
 
 ##############################SCRATCH###############################
     elif args.linear_mode == 'scratch':
-        args.num_class = 1
+        args.optim_lr = 1e-4
         if args.name in ['SimMIM', 'DisAE', 'P2S2P']:
             args.batch_size = 3
         elif args.name in [ 'HWDAE', 'WDDPM', 'DDAE']:
             args.batch_size = 6
             
+        print("REG SCRATCH TRAIN START")
+        print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
+        
         if args.data_per == 100:
             args.max_epochs = 30
             args.warm_up_epoch = 10
-            print("REG SCRATCH TRAIN START")
                 
             for i in range(5):
                 args.fold = i+1
@@ -134,17 +135,21 @@ def main():
 
 ############################FINE_TUNING#############################
     elif args.linear_mode == 'fine_tuning':
-        args.num_class = 1
+        args.optim_lr = 1e-4
+        if args.name in ['SimMIM', 'DisAE', 'P2S2P']:
+            args.batch_size = 3
+        elif args.name in [ 'HWDAE', 'WDDPM', 'DDAE']:
+            args.batch_size = 6
+            
         print("REG FINE_TUNING TRAIN START")
-
+        print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
+        
         if args.data_per == 100:
             args.max_epochs = 30
             args.warm_up_epoch = 10
-            args.optim_lr = 1e-4
 
             for i in range(5):
                 args.fold = i+1
-                print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
                 print(f"FOLD_{args.fold} TRAIN PROCESS START")
                 loaders = get_loader_reg(args)
 
@@ -164,7 +169,6 @@ def main():
             
             for i in range(10):
                 args.fold = (i*2)+1
-                print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
                 print(f"FOLD_{args.fold} TRAIN PROCESS START")
                 loaders = get_loader_reg(args)
                 
@@ -240,8 +244,7 @@ def main_worker(args, loader):
 
         val_loss_max = 5
 
-        for epoch in range(args.max_epochs):
-            #Train phase
+        for epoch in range(args.max_epochs): #Train phase / Valid phase
             train_stats = train_epoch(args, 
                                       epoch, 
                                       loader[0], 
@@ -249,6 +252,7 @@ def main_worker(args, loader):
                                       criterion, 
                                       optimizer, 
                                       device)
+            
             lr = optimizer.param_groups[0]["lr"]
             print(f"lr : {lr}")
             train_stats['lr'] = lr
@@ -262,16 +266,16 @@ def main_worker(args, loader):
                                             device)
 
                 val_stats['loss'] = loss
-
-                log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
-                             **{f'valid_{k}': v for k, v in val_stats.items()},
-                             'epoch': epoch}
                 
                 #loss best weight
                 if val_stats['loss'] < val_loss_max:
                     save_checkpoint(args.log_dir + f"model_best_loss.pt", model)
                     print('new best loss ({:.5f} --> {:.5f}).'.format(val_loss_max, val_stats['loss']))
                     val_loss_max = val_stats['loss']
+
+                log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
+                             **{f'valid_{k}': v for k, v in val_stats.items()},
+                             'epoch': epoch}
                 
                 with (Path(f'{args.log_dir}log.txt')).open('a') as f:
                     f.write(json.dumps(log_stats) + "\n")

@@ -23,8 +23,8 @@ def create_model(args):
                                                         num_res_blocks=2)
 
                 self.semantic_encoder = DiffusionModelEncoder_ansio(spatial_dims=3,
-                                                                    in_channels=8,
-                                                                    out_channels=8,
+                                                                    in_channels=8, #wavelet
+                                                                    out_channels=8, #wavelet
                                                                     num_channels=[128,256,256,512],
                                                                     attention_levels=[False,False,False,False],
                                                                     num_head_channels=[0,0,0,0],
@@ -47,58 +47,55 @@ def create_model(args):
             if args.linear_mode == 'linear':
                 ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/1_HWDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 checkpoint = ckpt['ema']
                 new_ckpt = filter_ema_keys(checkpoint)
                 model.load_state_dict(new_ckpt, strict=False)
                 model = model.semantic_encoder
                 model.requires_grad_(False)
-                
                 model.linear = nn.Linear(512*5, args.num_class)
-                
-            elif args.linear_mode == 'fine_tuning': #from up-stream
+                model.linear.requires_grad_(True)
+
+            elif args.linear_mode == 'fine_tuning':
                 ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/1_HWDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 checkpoint = ckpt['ema']
                 new_ckpt = filter_ema_keys(checkpoint)
                 model.load_state_dict(new_ckpt, strict=False)
                 model = model.semantic_encoder
-
                 model.linear = nn.Linear(512, args.num_class)
 
             elif args.linear_mode == 'scratch':
                 model = model.semantic_encoder
-
                 model.linear = nn.Linear(512, args.num_class)
                 print("scratch")
         
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
-
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.semantic_encoder
-                # model.linear = nn.Linear(512*5, args.num_class)
-                model.linear = nn.Linear(512, args.num_class)
+                model.linear = nn.Linear(512*5, args.num_class)
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'fine_tuning':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
-                
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.semantic_encoder
-
                 model.linear = nn.Linear(512, args.num_class)
-
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'scratch':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
-
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.semantic_encoder
                 model.linear = nn.Linear(512, args.num_class)
@@ -135,6 +132,7 @@ def create_model(args):
             if args.linear_mode == 'linear':
                 ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/2_WDDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 new_ckpt = remove_ema_prefix(ckpt['ema'])
                 model.load_state_dict(new_ckpt, strict=False)
@@ -144,6 +142,7 @@ def create_model(args):
             elif args.linear_mode == 'fine_tuning':
                 ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/2_WDDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 new_ckpt = remove_ema_prefix(ckpt['ema'])
                 model.load_state_dict(new_ckpt, strict=False)
@@ -153,20 +152,23 @@ def create_model(args):
         
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'fine_tuning':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'scratch':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.load_state_dict(ckpt['state_dict'])
 
@@ -184,8 +186,8 @@ def create_model(args):
             return ema_model_state_dict
                 
         model =  DiffusionModelUNet_aniso_enc(spatial_dims=3,
-                                            in_channels=1, #wavelet
-                                            out_channels=1, #wavelet
+                                            in_channels=1,
+                                            out_channels=1,
                                             num_channels=[16,32,64,128,256],
                                             attention_levels=[False,False,False,False,True],
                                             num_head_channels=[0,0,0,0,32],
@@ -201,6 +203,7 @@ def create_model(args):
             if args.linear_mode == 'linear':
                 ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/3_DDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 new_ckpt = remove_ema_prefix(ckpt['ema'])
                 model.load_state_dict(new_ckpt, strict=False)
@@ -210,6 +213,7 @@ def create_model(args):
             elif args.linear_mode == 'fine_tuning':
                 ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/3_DDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 new_ckpt = remove_ema_prefix(ckpt['ema'])
                 model.load_state_dict(new_ckpt, strict=False)
@@ -219,27 +223,28 @@ def create_model(args):
         
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'fine_tuning':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
-
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'scratch':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.load_state_dict(ckpt['state_dict'])
 
-
     elif args.name == 'P2S2P':
-        from PREVIOUS.PSP.networks import GradualStyleEncoder_3D
+        from PREVIOUS.P2S2P.networks import GradualStyleEncoder_3D
 
         model = GradualStyleEncoder_3D()
 
@@ -247,20 +252,20 @@ def create_model(args):
             if args.linear_mode == 'linear':
                 ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/4_P2S2P.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 checkpoint = ckpt['state_dict']
                 model.load_state_dict(checkpoint, strict=False)
-                # model.load_state_dict(checkpoint, strict=False)
                 model.requires_grad_(False)
                 model.linear = nn.Linear(512*12, args.num_class)
                 model.linear.requires_grad_(True)
 
-            elif args.linear_mode == 'fine_tuning': #from up-stream
+            elif args.linear_mode == 'fine_tuning':
                 ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/4_P2S2P.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 checkpoint = ckpt['state_dict']
-                # model.load_state_dict(checkpoint, strict=False)
                 model.load_state_dict(checkpoint, strict=False)
                 model.linear = nn.Linear(512*12, args.num_class)
 
@@ -270,28 +275,31 @@ def create_model(args):
         
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.linear = nn.Linear(512*12, args.num_class)
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'fine_tuning':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.linear = nn.Linear(512*12, args.num_class)
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'scratch':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.linear = nn.Linear(512*12, args.num_class)
                 model.load_state_dict(ckpt['state_dict'])
                 
-    elif args.name == "DAE":
-        from PREVIOUS.DAE import SwinTransformerForSimMIM_fine_tune, SimMIMSkip
+    elif args.name == "DisAE":
+        from PREVIOUS.DisAE import SwinTransformerForSimMIM_fine_tune, SimMIMSkip
         
         encoder = SwinTransformerForSimMIM_fine_tune(
             num_classes=0,
@@ -331,6 +339,7 @@ def create_model(args):
             if args.linear_mode == 'linear':
                 ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/5_DisAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.load_state_dict(ckpt['model'])
                 model.requires_grad_(False)
@@ -341,6 +350,7 @@ def create_model(args):
             elif args.linear_mode == 'fine_tuning':
                 ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/5_DisAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.load_state_dict(ckpt['model'])
                 model = model.encoder
@@ -352,8 +362,9 @@ def create_model(args):
         
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.encoder
                 model.head = nn.Linear(768, args.num_class)
@@ -361,17 +372,18 @@ def create_model(args):
 
             elif args.linear_mode == 'fine_tuning':
                 model.encoder.head = nn.Linear(768, args.num_class)
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
-
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.encoder
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'scratch':
                 model.encoder.head = nn.Linear(768, args.num_class)
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.encoder
                 model.head = nn.Linear(768, args.num_class)
@@ -394,7 +406,6 @@ def create_model(args):
                                                                     iso_conv_up=(True, True, True, True, False, None),
                                                                     num_res_blocks=2,)
 
-
                 self.semantic_encoder = DiffusionModelEncoder_ansio_no_wavelet(spatial_dims=3,
                                                                                 in_channels=1,
                                                                                 out_channels=1,
@@ -406,7 +417,6 @@ def create_model(args):
                                                                                 resblock_updown=False,
                                                                                 num_res_blocks=(2,2,2,2,2))
 
-                                                            
         model = HDAE()
 
         def filter_ema_keys(checkpoint):
@@ -422,6 +432,7 @@ def create_model(args):
             if args.linear_mode == 'linear':
                 ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/6_HDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 checkpoint = ckpt['ema']
                 new_ckpt = filter_ema_keys(checkpoint)
@@ -431,9 +442,10 @@ def create_model(args):
                 model.linear = nn.Linear(512*6, args.num_class)
                 model.linear.requires_grad_(True)
 
-            elif args.linear_mode == 'fine_tuning': #from linear_probing
+            elif args.linear_mode == 'fine_tuning':
                 ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/6_HDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 checkpoint = ckpt['ema']
                 new_ckpt = filter_ema_keys(checkpoint)
@@ -448,39 +460,34 @@ def create_model(args):
         
         else:
             if args.linear_mode == 'linear':
-                if args.test == 1:
-                    ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_loss.pt'
-                elif args.test == 2:
-                    ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_f1.pt'
-                elif args.test == 3:
-                    ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
-
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.semantic_encoder
                 model.linear = nn.Linear(512*6, args.num_class)
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'fine_tuning':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
-
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.semantic_encoder
                 model.linear = nn.Linear(512*6, args.num_class)
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'scratch':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
-
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.semantic_encoder
                 model.linear = nn.Linear(512*6, args.num_class)
                 model.load_state_dict(ckpt['state_dict'])
 
-    elif args.name == "SIMMIM":
-        from PREVIOUS.SIMMIM.simmim import SwinTransformerForSimMIM_fine_tune, SimMIM
+    elif args.name == "SimMIM":
+        from PREVIOUS.SimMIM.simmim import SwinTransformerForSimMIM_fine_tune, SimMIM
         
         encoder_fine_tuning = SwinTransformerForSimMIM_fine_tune(
             num_classes=1,
@@ -505,6 +512,7 @@ def create_model(args):
             if args.linear_mode == 'linear':
                 ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/7_SimMIM.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.load_state_dict(ckpt['model'])
                 model.requires_grad_(False)
@@ -515,6 +523,7 @@ def create_model(args):
             elif args.linear_mode == 'fine_tuning':
                 ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/7_SimMIM.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model.load_state_dict(ckpt['model'])
                 model = model.encoder
@@ -526,17 +535,18 @@ def create_model(args):
         
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.encoder
                 model.head = nn.Linear(768, args.num_class)
                 model.load_state_dict(ckpt['state_dict'])
 
             elif args.linear_mode == 'fine_tuning':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
-
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.encoder
                 model.head = nn.Linear(768, args.num_class)
@@ -544,12 +554,12 @@ def create_model(args):
                 
             elif args.linear_mode == 'scratch':
                 model.encoder.head = nn.Linear(768, args.num_class)
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_auc.pt'
                 print(f"ckpt_path : {ckpt_path}")
+                
                 ckpt = torch.load(ckpt_path, map_location='cpu')
                 model = model.encoder
                 model.head = nn.Linear(768, args.num_class)
                 model.load_state_dict(ckpt['state_dict'])
-   
-                
+                   
     return model

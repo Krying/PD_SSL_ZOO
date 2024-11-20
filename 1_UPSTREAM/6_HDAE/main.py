@@ -41,7 +41,7 @@ def main():
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda_visible_devices
     args.logdir = args.log_dir
-    misc.set_determinism(seed=2023)
+    misc.set_determinism(seed=2024)
     
     main_worker_enc(args=args)
 
@@ -77,10 +77,8 @@ def main_worker_enc(args):
                                  lr_scheduler=lr_scheduler,
                                  args=args,
                                  )
-            
 
     return accuracy
-
 
 if __name__ == '__main__':
     main()

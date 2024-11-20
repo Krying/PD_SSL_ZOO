@@ -24,8 +24,8 @@ def create_model(args):
                                                         num_res_blocks=2)
 
                 self.semantic_encoder = DiffusionModelEncoder_ansio(spatial_dims=3,
-                                                                    in_channels=8,
-                                                                    out_channels=8,
+                                                                    in_channels=8, #wavelet
+                                                                    out_channels=8, #wavelet
                                                                     num_channels=[128,256,256,512],
                                                                     attention_levels=[False,False,False,False],
                                                                     num_head_channels=[0,0,0,0],
@@ -133,8 +133,8 @@ def create_model(args):
             return ema_model_state_dict
                 
         model =  DiffusionModelUNet_aniso_enc(spatial_dims=3,
-                                              in_channels=1, #wavelet
-                                              out_channels=1, #wavelet
+                                              in_channels=1, 
+                                              out_channels=1, 
                                               num_channels=[16,32,64,128,256],
                                               attention_levels=[False,False,False,False,True],
                                               num_head_channels=[0,0,0,0,32],
@@ -187,7 +187,6 @@ def create_model(args):
                 model.linear = nn.Linear(512*12, args.num_class)
                 model.linear.requires_grad_(True)
 
-        # elif args.test == 1:
         else:
             if args.linear_mode == 'linear':
                 ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_loss.pt'

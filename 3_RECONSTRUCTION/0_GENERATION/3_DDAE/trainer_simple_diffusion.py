@@ -445,7 +445,7 @@ class Trainer(object):
 
         accelerator.print('training complete')
 
-    def generation(self, num_iter, num):
+    def generation(self, num_iter):
         self.ema.ema_model.eval()
 
         for i in range(num_iter):

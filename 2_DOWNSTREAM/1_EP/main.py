@@ -21,15 +21,13 @@ parser.add_argument("--num_class", default=2, type=int)
 parser.add_argument("--batch_size", default=8, type=int)
 parser.add_argument("--max_epochs", default=50, type=int)
 parser.add_argument("--min_lr", default=1e-8, type=float)
-parser.add_argument("--ckpt_path", default=None, type=str)
-parser.add_argument('--last_enc_ch', default=768, type=int)
 parser.add_argument("--optim_lr", default=1e-3, type=float)
 parser.add_argument("--warm_up_epoch", default=10, type=int)
 parser.add_argument("--start_decay_epoch", default=45, type=int)
 parser.add_argument('--cuda_visible_devices', default='0', type=str)
+parser.add_argument("--down_type", default=None, type=str, choices=["1_EP", "2_PMP", "3_SOY"])
 parser.add_argument("--log_dir", default="/workspace/PD_SSL_ZOO/2_DOWNSTREAM/1_EP/", type=str)
 parser.add_argument("--log_dir_png", default="/workspace/PD_SSL_ZOO/2_DOWNSTREAM/1_EP/", type=str)
-parser.add_argument("--down_type", default=None, type=str, choices=["1_EP", "2_PMP", "3_SOY"])
 parser.add_argument('--data_per', default=None, type=int, choices=[100, 25]) #for data stress test
 parser.add_argument("--linear_mode", default='linear', type=str, choices=["scratch", "linear", "fine_tuning"])
 parser.add_argument("--name", default=None, type=str, choices=["HWDAE", "WDDAE", "DDAE", "P2S2P", "DisAE", "HDAE", "SimMIM"])
@@ -40,10 +38,11 @@ def main():
     os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"]=args.cuda_visible_devices
     
-###########################LINEAR_PROBING###########################
-    args.linear_mode = 'linear'
     args.down_type = '1_EP'
     args.num_class = 2
+    
+###########################LINEAR_PROBING###########################
+    args.linear_mode = 'linear'
     
     print("ET/PD LINEAR TRAIN START")
     if args.data_per == 100:

@@ -58,7 +58,7 @@ def parse_option():
     parser.add_argument("--loss_type", type=str, default="mask_only", help="decoder type")
 
     parser.add_argument("--amp_opt_level", type=str, default="O1", help="amp opt level")
-    parser.add_argument("--epoch", default=300, type=int, help="number of epochs")
+    parser.add_argument("--epoch", default=500, type=int, help="number of epochs")
     parser.add_argument("--start_epoch", default=0, type=int, help="number of epochs")
     parser.add_argument("--warmpup_epoch", default=20, type=int, help="warmup epoch")
     parser.add_argument("--decay_epoch", default=30, type=int, help="warmup epoch")
@@ -110,8 +110,8 @@ def parse_option():
     # parser.add_argument('--tag', help='tag of experiment')
 
     # distributed training
-    parser.add_argument("--roi_x", default=96, type=int, help="roi size in x direction")
-    parser.add_argument("--roi_y", default=96, type=int, help="roi size in y direction")
+    parser.add_argument("--roi_x", default=192, type=int, help="roi size in x direction")
+    parser.add_argument("--roi_y", default=192, type=int, help="roi size in y direction")
     parser.add_argument("--roi_z", default=96, type=int, help="roi size in z direction")
     parser.add_argument("--dropout_rate", default=0.0, type=float, help="dropout rate")
     parser.add_argument("--dropout_path_rate", default=0.0, type=float, help="drop path rate")

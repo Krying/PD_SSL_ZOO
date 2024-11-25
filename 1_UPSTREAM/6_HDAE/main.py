@@ -28,7 +28,7 @@ def str2bool(v):
 parser = argparse.ArgumentParser(description='HDAE upstream')
 parser.add_argument('--model', default='HDAE', type=str)
 parser.add_argument('--batch_size', default=2, type=int)
-parser.add_argument('--max_epochs', default=300, type=int)
+parser.add_argument('--max_epochs', default=500, type=int)
 parser.add_argument('--val_interval', default=2, type=int)
 parser.add_argument('--eta_max', default=4e-5, type=float)
 parser.add_argument('--optim_lr', default=2e-5, type=float)
@@ -68,7 +68,7 @@ def main_worker_enc(args):
     print(f"learnig_rate : {args.optim_lr}")
 
     optimizer = torch.optim.AdamW(params=model.parameters(), lr=args.optim_lr, weight_decay=0.05)
-    lr_scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=300, T_mult=1, eta_max=args.eta_max, T_up=1)
+    lr_scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=500, T_mult=1, eta_max=args.eta_max, T_up=2)
 
     accuracy = run_training_hdae(model,
                                  train_loader=loader[0],

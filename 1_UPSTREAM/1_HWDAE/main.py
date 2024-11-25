@@ -53,7 +53,7 @@ def main_worker_enc(args):
     print(f"learnig_rate : {args.eta_max}")
 
     optimizer = torch.optim.AdamW(params=model.parameters(), lr=args.optim_lr, weight_decay=0.05)
-    lr_scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=500, T_mult=1, eta_max=args.eta_max, T_up=1)
+    lr_scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=500, T_mult=1, eta_max=args.eta_max, T_up=2)
 
     accuracy = run_training_hwdae(model,
                                   train_loader=loader[0],

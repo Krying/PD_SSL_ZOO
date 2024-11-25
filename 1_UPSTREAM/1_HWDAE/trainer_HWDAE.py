@@ -247,6 +247,9 @@ def run_training_hwdae(model,
                                              args=args
                                              )
 
+            log_stats = {f'valid_{epoch}': epoch_val_loss}
+            with (Path(args.log_dir) / 'log.txt').open('a') as f:
+                f.write(json.dumps(log_stats) + "\n")
 
     return epoch_val_loss
 

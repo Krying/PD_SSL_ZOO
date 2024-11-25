@@ -1,19 +1,11 @@
-from monai import data, transforms
 import glob
-import numpy as np
-import os
-import re
-import natsort
-import SimpleITK as sitk
 import math
+import natsort
+from monai import data, transforms
 
 def get_loader(args):
-    if args.temp:
-        train_real = natsort.natsorted(glob.glob(f'/workspace/dataset/PET/*.nii.gz'))[:6] #ALL -> 2125 or 2130
-        valid_real = natsort.natsorted(glob.glob(f'/workspace/dataset/PET/*.nii.gz'))[-6:] #ALL -> 2125 or 2130
-    else:
-        train_real = natsort.natsorted(glob.glob(f'/workspace/dataset/PET/*.nii.gz'))[:] #ALL -> 2125 or 2130
-        valid_real = natsort.natsorted(glob.glob(f'/workspace/dataset/PET/*.nii.gz'))[-100:] #ALL -> 2125 or 2130
+    train_real = natsort.natsorted(glob.glob(f'/workspace/dataset/PET/*.nii.gz'))[:] 
+    valid_real = natsort.natsorted(glob.glob(f'/workspace/dataset/PET/*.nii.gz'))[-100:]
 
     print("Train [Total]  number = ", len(train_real))
 
@@ -44,8 +36,6 @@ def get_loader(args):
         ]
     )
 
-
-    # new_dataset -> Cachenew_dataset
     train_ds = data.Dataset(data = files_tr, transform = tr_transforms)
     val_ds = data.Dataset(data = files_val, transform = val_transforms)
 
@@ -53,7 +43,7 @@ def get_loader(args):
         train_ds,
         batch_size=args.batch_size,
         shuffle=True,
-        num_workers=2,
+        # num_workers=2,
         pin_memory=False
         # persistent_workers=True,
     )
@@ -61,8 +51,8 @@ def get_loader(args):
     val_loader = data.DataLoader(
         val_ds,
         batch_size=1,
-        shuffle=True,
-        num_workers=2,
+        shuffle=False,
+        # num_workers=2,
         pin_memory=False
         # persistent_workers=True,
     )

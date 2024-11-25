@@ -43,7 +43,7 @@ def get_loader(args):
         train_ds,
         batch_size=args.batch_size,
         shuffle=True,
-        num_workers=2,
+        # num_workers=2,
         pin_memory=False
         # persistent_workers=True,
     )
@@ -51,8 +51,8 @@ def get_loader(args):
     val_loader = data.DataLoader(
         val_ds,
         batch_size=1,
-        shuffle=True,
-        num_workers=2,
+        shuffle=False,
+        # num_workers=2,
         pin_memory=False
         # persistent_workers=True,
     )

@@ -160,7 +160,7 @@ def run_training_hdae(model,
                       ):
 
     scheduler = DDPMScheduler(num_train_timesteps=1000, 
-                              schedule="scaled_linear_beta", 
+                              schedule="linear_beta", 
                               beta_start=0.0005, 
                               beta_end=0.0195)
 
@@ -169,7 +169,7 @@ def run_training_hdae(model,
     n_epochs = args.max_epochs
     start_epoch = 0
     ema_model = EMA(model, 
-                    beta=0.99,
+                    beta=0.995,
                     update_after_step=15000,
                     update_every=10)
     
@@ -189,7 +189,7 @@ def run_training_hdae(model,
         print(f"lr : {lr}")
         lr_scheduler.step()
 
-        if (epoch) % 2 == 0 and epoch>10:
+        if (epoch) % args.val_interval == 0:
             save_checkpoint(model,
                             ema_model,
                             epoch,
@@ -206,6 +206,10 @@ def run_training_hdae(model,
                                                  epoch,
                                                  args=args
                                                  )
+
+            log_stats = {f'valid_{epoch}': epoch_val_loss}
+            with (Path(args.log_dir) / 'log.txt').open('a') as f:
+                f.write(json.dumps(log_stats) + "\n")
 
     return epoch_val_loss
 

@@ -89,7 +89,7 @@ def main():
         args.optim_lr = 1e-4
         if args.name in ['SimMIM', 'DisAE', 'P2S2P']:
             args.batch_size = 3
-        elif args.name in [ 'HWDAE', 'WDDPM', 'DDAE']:
+        elif args.name in [ 'HWDAE', 'WDDAE', 'DDAE']:
             args.batch_size = 6
             
         print("REG SCRATCH TRAIN START")
@@ -138,7 +138,7 @@ def main():
         args.optim_lr = 1e-4
         if args.name in ['SimMIM', 'DisAE', 'P2S2P']:
             args.batch_size = 3
-        elif args.name in [ 'HWDAE', 'WDDPM', 'DDAE']:
+        elif args.name in [ 'HWDAE', 'WDDAE', 'DDAE']:
             args.batch_size = 6
             
         print("REG FINE_TUNING TRAIN START")

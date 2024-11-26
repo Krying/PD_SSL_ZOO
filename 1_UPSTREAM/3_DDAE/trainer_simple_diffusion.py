@@ -16,6 +16,7 @@ from accelerate import Accelerator
 from ema_pytorch import EMA
 from pathlib import Path
 import os
+from lr_scheduler import CosineAnnealingWarmUpRestarts
 
 # helpers
 
@@ -328,7 +329,7 @@ class Trainer(object):
 
         if self.accelerator.is_main_process:
             self.ema = EMA(diffusion_model, 
-                           beta = 0.99, 
+                           beta = 0.995, 
                            update_after_step=15000,
                            update_every = 10)
             self.ema.to(self.device)
@@ -403,6 +404,8 @@ class Trainer(object):
         accelerator = self.accelerator
         device = accelerator.device
 
+        lr_scheduler = CosineAnnealingWarmUpRestarts(self.opt, T_0=500, T_mult=1, eta_max=args.eta_max, T_up=2)
+
         with tqdm(initial = self.step, total = self.train_num_steps, disable = not accelerator.is_main_process) as pbar:
 
             while self.step < self.train_num_steps:
@@ -445,7 +448,11 @@ class Trainer(object):
                             self.save(milestone)
 
                 pbar.update(1)
-
+                if self.step % (1934/args.batch_size) == 0:
+                    lr_scheduler.step()
+                    lr = self.opt.param_groups[0]["lr"]
+                    print(f"lr : {lr}")
+                    
         accelerator.print('training complete')
 
     def generation(self, num_iter, num):

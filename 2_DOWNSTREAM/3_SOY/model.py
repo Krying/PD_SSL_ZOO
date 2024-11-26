@@ -130,7 +130,7 @@ def create_model(args):
         
         if args.test == 0:
             if args.linear_mode == 'linear':
-                ckpt_path = '/workspace/PD_SSL_ZOO/DOWNSTREAM/WEIGHTS/2_WDDAE.pt'
+                ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/2_WDDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
                 
                 ckpt = torch.load(ckpt_path, map_location='cpu')
@@ -140,7 +140,7 @@ def create_model(args):
                 model.linear.requires_grad_(True)
 
             elif args.linear_mode == 'fine_tuning':
-                ckpt_path = '/workspace/PD_SSL_ZOO/DOWNSTREAM/WEIGHTS/2_WDDAE.pt'
+                ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/2_WDDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
                 
                 ckpt = torch.load(ckpt_path, map_location='cpu')
@@ -201,7 +201,7 @@ def create_model(args):
         
         if args.test == 0:
             if args.linear_mode == 'linear':
-                ckpt_path = '/workspace/PD_SSL_ZOO/DOWNSTREAM/WEIGHTS/3_DDAE.pt'
+                ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/3_DDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
                 
                 ckpt = torch.load(ckpt_path, map_location='cpu')
@@ -211,7 +211,7 @@ def create_model(args):
                 model.linear.requires_grad_(True)
 
             elif args.linear_mode == 'fine_tuning':
-                ckpt_path = '/workspace/PD_SSL_ZOO/DOWNSTREAM/WEIGHTS/3_DDAE.pt'
+                ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/WEIGHTS/3_DDAE.pt'
                 print(f"ckpt_path : {ckpt_path}")
                 
                 ckpt = torch.load(ckpt_path, map_location='cpu')

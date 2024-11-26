@@ -22,6 +22,7 @@ parser.add_argument('--amp', default=0, type=int)
 parser.add_argument('--batch_size', default=2, type=int)
 parser.add_argument('--image_size', default=192, type=int)
 parser.add_argument('--optim_lr', default=2e-5, type=float)
+parser.add_argument('--eta_max', default=4e-5, type=float)
 parser.add_argument('--max_grad_norm', default=1., type=float)
 parser.add_argument('--train_num_steps', default=480000, type=int)
 parser.add_argument('--split_batches', default=True, type=str2bool)
@@ -59,6 +60,7 @@ def main_worker_enc(args):
 
     print('MODEL Number of Learnable Params:', model_n_parameters)   
     print(f"learnig_rate : {args.optim_lr}")
+    
 
     diffusion = GaussianDiffusion(model = model,
                                   image_size = 192,

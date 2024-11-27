@@ -78,11 +78,11 @@ def save_checkpoint(args, epoch, model, max_accuracy, optimizer, lr_scheduler, l
 
     if best_model:
         save_path = os.path.join(args.output, f"ckpt_best.pth")
-        torch.save(save_state,  f"/workspace/Ablation/ABLATION_PD/SIMMIM_SSL/output/ckpt_best.pth")
+        torch.save(save_state,  f"{args.output}/ckpt_best.pth")
         logger.info(f"{save_path} saving......")
 
     save_path = os.path.join(args.output, f"ckpt_{epoch}.pth")
-    torch.save(save_state,  f"/workspace/Ablation/ABLATION_PD/SIMMIM_SSL/output/ckpt_epoch_{epoch}.pth")
+    torch.save(save_state,  f"{args.output}/ckpt_epoch_{epoch}.pth")
     logger.info(f"{save_path} saved !!!")
 
 

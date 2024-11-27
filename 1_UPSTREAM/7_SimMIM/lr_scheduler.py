@@ -1,152 +1,59 @@
-from bisect import bisect_right
-from collections import Counter
-
 import torch
-from timm.scheduler.cosine_lr import CosineLRScheduler
-from timm.scheduler.scheduler import Scheduler
-from timm.scheduler.step_lr import StepLRScheduler
+import math
+import functools
+from torch.optim.lr_scheduler import _LRScheduler
 
-
-def build_scheduler(args, optimizer, n_iter_per_epoch):
-    num_steps = int(args.epoch * n_iter_per_epoch)
-    warmup_steps = int(args.warmpup_epoch * n_iter_per_epoch)
-    decay_steps = int(args.decay_epoch * n_iter_per_epoch)
-    multi_steps = [i * n_iter_per_epoch for i in []]
-
-    lr_scheduler = None
-    if args.lr_scheduler_name == "cosine":
-        lr_scheduler = CosineLRScheduler(
-            optimizer,
-            t_initial=num_steps,
-            lr_min=args.min_lr,
-            warmup_lr_init=args.warmup_lr,
-            warmup_t=warmup_steps,
-            cycle_limit=1,
-            t_in_epochs=False,
-        )
-    elif args.lr_scheduler_name == "linear":
-        lr_scheduler = LinearLRScheduler(
-            optimizer,
-            t_initial=num_steps,
-            lr_min_rate=0.01,
-            warmup_lr_init=args.warmup_lr,
-            warmup_t=warmup_steps,
-            t_in_epochs=False,
-        )
-    elif args.lr_scheduler_name == "step":
-        lr_scheduler = StepLRScheduler(
-            optimizer,
-            decay_t=decay_steps,
-            decay_rate=args.lr_decay_rate,
-            warmup_lr_init=args.warmup_lr,
-            warmup_t=warmup_steps,
-            t_in_epochs=False,
-        )
-    elif args.lr_scheduler_name == "multistep":
-        lr_scheduler = MultiStepLRScheduler(
-            optimizer,
-            milestones=multi_steps,
-            gamma=args.lr_gamma,
-            warmup_lr_init=args.warmup_lr,
-            warmup_t=warmup_steps,
-            t_in_epochs=False,
-        )
-
-    return lr_scheduler
-
-
-class LinearLRScheduler(Scheduler):
-    def __init__(
-        self,
-        optimizer: torch.optim.Optimizer,
-        t_initial: int,
-        lr_min_rate: float,
-        warmup_t=0,
-        warmup_lr_init=0.0,
-        t_in_epochs=True,
-        noise_range_t=None,
-        noise_pct=0.67,
-        noise_std=1.0,
-        noise_seed=42,
-        initialize=True,
-    ) -> None:
-        super().__init__(
-            optimizer,
-            param_group_field="lr",
-            noise_range_t=noise_range_t,
-            noise_pct=noise_pct,
-            noise_std=noise_std,
-            noise_seed=noise_seed,
-            initialize=initialize,
-        )
-
-        self.t_initial = t_initial
-        self.lr_min_rate = lr_min_rate
-        self.warmup_t = warmup_t
-        self.warmup_lr_init = warmup_lr_init
-        self.t_in_epochs = t_in_epochs
-        if self.warmup_t:
-            self.warmup_steps = [(v - warmup_lr_init) / self.warmup_t for v in self.base_values]
-            super().update_groups(self.warmup_lr_init)
-        else:
-            self.warmup_steps = [1 for _ in self.base_values]
-
-    def _get_lr(self, t):
-        if t < self.warmup_t:
-            lrs = [self.warmup_lr_init + t * s for s in self.warmup_steps]
-        else:
-            t = t - self.warmup_t
-            total_t = self.t_initial - self.warmup_t
-            lrs = [v - ((v - v * self.lr_min_rate) * (t / total_t)) for v in self.base_values]
-        return lrs
-
-    def get_epoch_values(self, epoch: int):
-        if self.t_in_epochs:
-            return self._get_lr(epoch)
-        else:
-            return None
-
-    def get_update_values(self, num_updates: int):
-        if not self.t_in_epochs:
-            return self._get_lr(num_updates)
-        else:
-            return None
-
-
-class MultiStepLRScheduler(Scheduler):
-    def __init__(
-        self, optimizer: torch.optim.Optimizer, milestones, gamma=0.1, warmup_t=0, warmup_lr_init=0, t_in_epochs=True
-    ) -> None:
-        super().__init__(optimizer, param_group_field="lr")
-
-        self.milestones = milestones
+class CosineAnnealingWarmUpRestarts(_LRScheduler):
+    def __init__(self, optimizer, T_0, T_mult=1, eta_max=0.1, T_up=0, gamma=1., last_epoch=-1):
+        if T_0 <= 0 or not isinstance(T_0, int):
+            raise ValueError("Expected positive integer T_0, but got {}".format(T_0))
+        if T_mult < 1 or not isinstance(T_mult, int):
+            raise ValueError("Expected integer T_mult >= 1, but got {}".format(T_mult))
+        if T_up < 0 or not isinstance(T_up, int):
+            raise ValueError("Expected positive integer T_up, but got {}".format(T_up))
+        self.T_0 = T_0
+        self.T_mult = T_mult
+        self.base_eta_max = eta_max
+        self.eta_max = eta_max
+        self.T_up = T_up
+        self.T_i = T_0
         self.gamma = gamma
-        self.warmup_t = warmup_t
-        self.warmup_lr_init = warmup_lr_init
-        self.t_in_epochs = t_in_epochs
-        if self.warmup_t:
-            self.warmup_steps = [(v - warmup_lr_init) / self.warmup_t for v in self.base_values]
-            super().update_groups(self.warmup_lr_init)
+        self.cycle = 0
+        self.T_cur = last_epoch
+        super(CosineAnnealingWarmUpRestarts, self).__init__(optimizer, last_epoch)
+    
+    def get_lr(self):
+        if self.T_cur == -1:
+            return self.base_lrs
+        elif self.T_cur < self.T_up:
+            return [(self.eta_max - base_lr)*self.T_cur / self.T_up + base_lr for base_lr in self.base_lrs]
         else:
-            self.warmup_steps = [1 for _ in self.base_values]
+            return [base_lr + (self.eta_max - base_lr) * (1 + math.cos(math.pi * (self.T_cur-self.T_up) / (self.T_i - self.T_up))) / 2
+                    for base_lr in self.base_lrs]
 
-        assert self.warmup_t <= min(self.milestones)
-
-    def _get_lr(self, t):
-        if t < self.warmup_t:
-            lrs = [self.warmup_lr_init + t * s for s in self.warmup_steps]
+    def step(self, epoch=None):
+        if epoch is None:
+            epoch = self.last_epoch + 1
+            self.T_cur = self.T_cur + 1
+            if self.T_cur >= self.T_i:
+                self.cycle += 1
+                self.T_cur = self.T_cur - self.T_i
+                self.T_i = (self.T_i - self.T_up) * self.T_mult + self.T_up
         else:
-            lrs = [v * (self.gamma ** bisect_right(self.milestones, t)) for v in self.base_values]
-        return lrs
-
-    def get_epoch_values(self, epoch: int):
-        if self.t_in_epochs:
-            return self._get_lr(epoch)
-        else:
-            return None
-
-    def get_update_values(self, num_updates: int):
-        if not self.t_in_epochs:
-            return self._get_lr(num_updates)
-        else:
-            return None
+            if epoch >= self.T_0:
+                if self.T_mult == 1:
+                    self.T_cur = epoch % self.T_0
+                    self.cycle = epoch // self.T_0
+                else:
+                    n = int(math.log((epoch / self.T_0 * (self.T_mult - 1) + 1), self.T_mult))
+                    self.cycle = n
+                    self.T_cur = epoch - self.T_0 * (self.T_mult ** n - 1) / (self.T_mult - 1)
+                    self.T_i = self.T_0 * self.T_mult ** (n)
+            else:
+                self.T_i = self.T_0
+                self.T_cur = epoch
+                
+        self.eta_max = self.base_eta_max * (self.gamma**self.cycle)
+        self.last_epoch = math.floor(epoch)
+        for param_group, lr in zip(self.optimizer.param_groups, self.get_lr()):
+            param_group['lr'] = lr

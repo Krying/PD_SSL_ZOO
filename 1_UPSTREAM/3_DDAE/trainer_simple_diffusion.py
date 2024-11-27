@@ -344,7 +344,7 @@ class Trainer(object):
         # prepare model, dataloader, optimizer with accelerator
 
         self.model, self.opt = self.accelerator.prepare(self.model, self.opt)
-
+        self.lr_scheduler = CosineAnnealingWarmUpRestarts(self.opt, T_0=500, T_mult=1, eta_max=args.eta_max, T_up=2)
 
     @property
     def device(self):
@@ -359,6 +359,7 @@ class Trainer(object):
             'model': self.accelerator.get_state_dict(self.model),
             'opt': self.opt.state_dict(),
             'ema': self.ema.state_dict(),
+            'scheduler': self.lr_scheduler.state_dict(),
             'scaler': self.accelerator.scaler.state_dict() if exists(self.accelerator.scaler) else None,
             # 'version': __version__
         }
@@ -404,8 +405,6 @@ class Trainer(object):
         accelerator = self.accelerator
         device = accelerator.device
 
-        lr_scheduler = CosineAnnealingWarmUpRestarts(self.opt, T_0=500, T_mult=1, eta_max=args.eta_max, T_up=2)
-
         with tqdm(initial = self.step, total = self.train_num_steps, disable = not accelerator.is_main_process) as pbar:
 
             while self.step < self.train_num_steps:
@@ -449,7 +448,7 @@ class Trainer(object):
 
                 pbar.update(1)
                 if self.step % (1934/args.batch_size) == 0:
-                    lr_scheduler.step()
+                    self.lr_scheduler.step()
                     lr = self.opt.param_groups[0]["lr"]
                     print(f"lr : {lr}")
                     

@@ -11,13 +11,12 @@ import torch.distributed as dist
 import torch.nn.functional as F
 import torchvision
 from logger import create_logger
-from lr_scheduler import build_scheduler
+from lr_scheduler import CosineAnnealingWarmUpRestarts
 from data_utils import build_loader_simmim
 from pathlib import Path
 import json
 # from config import get_config
 from models import build_model
-from optimizer import build_optimizer
 from timm.utils import AverageMeter
 from utils import TensorboardLogger, auto_resume_helper, get_grad_norm, load_checkpoint, reduce_tensor, save_checkpoint
 
@@ -50,7 +49,7 @@ def parse_option():
 
     parser.add_argument("--optimizer_name", type=str, default="adamw", help="optimizer name")
     parser.add_argument("--momentum", default=0.9, type=float, help="optimizer momentum")
-    parser.add_argument("--base_lr", default=5e-4, type=float, help="base learning rate")
+    parser.add_argument("--base_lr", default=1e-4, type=float, help="base learning rate")
     parser.add_argument("--weight_decay", default=0.05, type=float, help="weight decay")
     parser.add_argument("--betas", default=(0.9, 0.999), type=tuple, help="optimizer betas")
     parser.add_argument("--eps", default=1e-8, type=float, help="eps")
@@ -69,7 +68,7 @@ def parse_option():
     parser.add_argument("--seed", default=0, type=int, help="seed")
 
     parser.add_argument("--lr_scheduler_name", type=str, default="cosine", help="learning rate scheduler name")
-    parser.add_argument("--min_lr", default=5e-6, type=float, help="min learning rate")
+    parser.add_argument("--min_lr", default=1e-5, type=float, help="min learning rate")
     parser.add_argument("--warmup_lr", default=5e-7, type=float, help="warmup lr")
     parser.add_argument("--lr_decay_rate", default=0.1, type=float, help="lr decay rate")
     parser.add_argument("--lr_gamma", default=0.1, type=float, help="lr gamma")
@@ -95,7 +94,7 @@ def parse_option():
 
     parser.add_argument(
         "--output",
-        default="/workspace/PD_SSL_ZOO/UPSTREAM/7_SimMIM/output",
+        default="/workspace/PD_SSL_ZOO/1_UPSTREAM/7_SimMIM/output",
         type=str,
         metavar="PATH",
         help="root of output folder, the full path is <output>/<model_name>/<tag> (default: output)",
@@ -139,12 +138,12 @@ def main(args):
     model.cuda()
     logger.info(str(model))
     pretrained_dir = args.pretrained_dir
-    optimizer = build_optimizer(args, model, logger, is_pretrain=True)
+    optimizer = torch.optim.AdamW(params=model.parameters(), lr=args.min_lr, weight_decay=0.05)
 
     n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
     logger.info(f"number of params: {n_parameters}")
 
-    lr_scheduler = build_scheduler(args, optimizer, len(data_loader_train))
+    lr_scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=500, T_mult=1, eta_max=args.base_lr, T_up=2)
 
     logger.info("Start training")
     if args.resume:
@@ -184,7 +183,7 @@ import SimpleITK as sitk
 def save_image(image_pred, description):
     pred_img = image_pred.cpu().detach().numpy().transpose(0,4,3,2,1).squeeze()
     save_pred = sitk.GetImageFromArray(pred_img)
-    sitk.WriteImage(save_pred, f"/workspace/PD_SSL_ZOO/UPSTREAM/7_SimMIM/output/{description}_pred.nii.gz")
+    sitk.WriteImage(save_pred, f"{args.log_dir}/{description}_pred.nii.gz")
 
 def train_one_epoch(args, model, data_loader, optimizer, epoch, lr_scheduler):
     model.train()
@@ -211,7 +210,7 @@ def train_one_epoch(args, model, data_loader, optimizer, epoch, lr_scheduler):
         if (idx + 1) % args.accumulate_step == 0:
             optimizer.step()
             optimizer.zero_grad()
-            lr_scheduler.step_update(epoch * num_steps + idx)
+            lr_scheduler.step()
 
         torch.cuda.synchronize()
 

@@ -10,6 +10,7 @@ from metric import LPIPS, psnr
 from model import create_model
 from trainer import run_training
 from data_utils import get_loader
+from lr_scheduler import CosineAnnealingWarmUpRestarts
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -23,11 +24,12 @@ parser = argparse.ArgumentParser(description='Pixel2Style2Pixel upstream')
 parser.add_argument('--batch_size', default=1, type=int)
 parser.add_argument('--num_layer', default=12, type=int)
 parser.add_argument('--image_size', default=192, type=int)
-parser.add_argument('--max_epochs', default=300, type=int)
+parser.add_argument('--max_epochs', default=500, type=int)
 parser.add_argument('--optim_lr', default=1e-6, type=float)
+parser.add_argument('--eta_max', default=5e-5, type=float)
 parser.add_argument('--cuda_visible_devices', default='0', type=str)
-parser.add_argument('--img_save_dir', default='/workspace/wjj910/Task1_clf/Task1_inversion/StyleGAN2_3d_PRO/INVERSION_PY/reconstruct/', help='start training from saved checkpoint')
-parser.add_argument('--log_dir', default='/workspace/Ablation/ABLATION_PD/GAN_INV_PSP/outputs/', help='start training from saved checkpoint')
+parser.add_argument('--img_save_dir', default='/workspace/PD_SSL_ZOO/1_UPSTREAM/4_Pixel2Style2Pixel/results/', help='start training from saved checkpoint')
+parser.add_argument('--log_dir', default='/workspace/PD_SSL_ZOO/1_UPSTREAM/4_Pixel2Style2Pixel/results/', help='start training from saved checkpoint')
 
 
 def main():
@@ -86,8 +88,7 @@ def main_worker_enc(args):
     print('DEC Number of Learnable Params:', dec_n_parameters)   
 
     optimizer = torch.optim.AdamW(params=encoder.parameters(), lr=args.optim_lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=5e-4, amsgrad=False)
-    
-    scheduler = None
+    lr_scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=500, T_mult=1, eta_max=args.eta_max, T_up=2)
 
     accuracy = run_training(enc=encoder,
                             dec=decoder.GE,
@@ -98,7 +99,7 @@ def main_worker_enc(args):
                             val_loader=val_loader,
                             optimizer=optimizer,
                             args=args,
-                            scheduler=scheduler,
+                            scheduler=lr_scheduler,
                             start_epoch=start_epoch)
     
 

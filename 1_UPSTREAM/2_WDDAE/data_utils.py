@@ -8,7 +8,7 @@ import SimpleITK as sitk
 import math
 
 def get_loader(args):
-    train_real = natsort.natsorted(glob.glob(f'/workspace/dataset/PET/NM_*.nii.gz'))[:] + natsort.natsorted(glob.glob(f'/workspace/dataset/PET/extra_*.nii.gz'))[:]
+    train_real = natsort.natsorted(glob.glob(f'/workspace/dataset/PET/*.nii.gz'))[:]
     
     print("Train [Total]  number = ", len(train_real))
 
@@ -22,7 +22,6 @@ def get_loader(args):
             transforms.RandAffine(translate_range=(5,0,5), padding_mode='zeros', prob=0.1),
             transforms.RandZoom(min_zoom=0.9, max_zoom=1.2, padding_mode='minimum', prob=0.1),
             transforms.RandRotate(range_x=math.radians(15), range_y=math.radians(15), range_z=math.radians(15), prob=0.1),
-            # transforms.ScaleIntensityRange(a_min=0.0, a_max=22.0, b_min=0.0, b_max=1.0, clip=True),
             transforms.EnsureType(),
             transforms.ToTensor(track_meta=False)
         ]
@@ -35,9 +34,7 @@ def get_loader(args):
         train_ds,
         batch_size=args.batch_size,
         shuffle=False,
-        num_workers=4,
         pin_memory=False
-        # persistent_workers=True,
     )
     print("loader is ver (train)")
 

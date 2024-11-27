@@ -47,7 +47,7 @@ def train_epoch(encoder,
         input_noise_1 = image_noise(1, 192, 'cuda')
         input_noise_2 = image_noise(1, 192, 'cuda')
         
-        x = batch_data['image'].to('cuda').float()
+        x = batch_data.to('cuda').float()
         codes = encoder(x)
         pred = decoder(codes, input_noise_1, input_noise_2)
         optimizer.zero_grad()
@@ -81,7 +81,7 @@ def val_epoch(encoder,
         for idx, batch_data in enumerate(epoch_iterator_val):
             input_noise_1 = image_noise(1, 192, 'cuda')
             input_noise_2 = image_noise(1, 192, 'cuda')
-            x = batch_data['image'].to('cuda').float()
+            x = batch_data.to('cuda').float()
             codes = encoder(x)
             pred = decoder(codes, input_noise_1, input_noise_2)
             
@@ -127,8 +127,8 @@ def save_image(x, pred, phase, args, epoch):
     ori_img = np.fliplr(ori_img)
     save_pred = sitk.GetImageFromArray(pred_img)
     save_ori = sitk.GetImageFromArray(ori_img)
-    sitk.WriteImage(save_pred, f'/workspace/PD_SSL_ZOO/1_UPSTREAM/4_Pixel2Style2Pixel/outputs/pred_{epoch}.nii.gz')
-    sitk.WriteImage(save_ori, f'/workspace/PD_SSL_ZOO/1_UPSTREAM/4_Pixel2Style2Pixel/outputs/ori_{epoch}.nii.gz')
+    sitk.WriteImage(save_pred, f'{args.img_save_dir}pred_{epoch}.nii.gz')
+    sitk.WriteImage(save_ori, f'{args.img_save_dir}ori_{epoch}.nii.gz')
         
 import json
 def run_training(enc,
@@ -140,7 +140,7 @@ def run_training(enc,
                  val_loader,
                  optimizer,
                  args,
-                 scheduler=None,
+                 scheduler,
                  start_epoch=0
                  ):
 
@@ -158,11 +158,11 @@ def run_training(enc,
 
         print("Averaged train_stats: ", tr_stat)
         log_stats = {f'train_{epoch}': tr_stat}
-        with (Path('/workspace/PD_SSL_ZOO/1_UPSTREAM/4_Pixel2Style2Pixel/outputs/log.txt')).open('a') as f:
+        with (Path(f'{args.log_dir}log.txt')).open('a') as f:
             f.write(json.dumps(log_stats) + "\n")
 
         b_new_best = False
-        if (epoch+1) % 1 == 0:
+        if (epoch) % 2 == 0:
             val_psnr = val_epoch(enc,
                                  dec,
                                  val_loader,
@@ -175,7 +175,7 @@ def run_training(enc,
             print('Final validation  {}/{}'.format(epoch, args.max_epochs - 1), 'psnr', val_psnr)
             
             val_log_stats = {f'val_{epoch}': val_psnr}
-            with (Path('/workspace/PD_SSL_ZOO/1_UPSTREAM/4_Pixel2Style2Pixel/outputs/log.txt')).open('a') as f:
+            with (Path(f'{args.log_dir}log.txt')).open('a') as f:
                 f.write(json.dumps(val_log_stats) + "\n")
 
             if val_psnr > val_psnr_max:
@@ -184,7 +184,8 @@ def run_training(enc,
                                 args.log_dir,
                                 best_acc=val_psnr_max,
                                 filename=f'model_{epoch}_final.pt',
-                                optimizer=optimizer)
+                                optimizer=optimizer,
+                                scheduler=scheduler)
 
                 print('new best ({:.6f} --> {:.6f}). '.format(val_psnr_max, val_psnr))
                 val_psnr_max = val_psnr
@@ -194,8 +195,8 @@ def run_training(enc,
                 print('Copying to model.pt new best model!!!!')
                 shutil.copyfile(os.path.join(args.log_dir, f'model_{epoch}_final.pt'), os.path.join(args.log_dir, 'model_best.pt'))
 
-        if scheduler is not None:
-            scheduler.step()
+        scheduler.step()
+
     print('Training Finished !, Best Accuracy: ', val_psnr_max)
 
     return val_psnr_max

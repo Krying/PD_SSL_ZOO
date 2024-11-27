@@ -34,9 +34,7 @@ def get_loader(args):
         train_ds,
         batch_size=args.batch_size,
         shuffle=False,
-        num_workers=4,
         pin_memory=False
-        # persistent_workers=True,
     )
     print("loader is ver (train)")
 

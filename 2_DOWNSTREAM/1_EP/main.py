@@ -28,7 +28,6 @@ parser.add_argument('--cuda_visible_devices', default='0', type=str)
 parser.add_argument("--down_type", default=None, type=str, choices=["1_EP", "2_PMP", "3_SOY"])
 parser.add_argument("--log_dir", default="/workspace/PD_SSL_ZOO/2_DOWNSTREAM/1_EP/", type=str)
 parser.add_argument("--log_dir_png", default="/workspace/PD_SSL_ZOO/2_DOWNSTREAM/1_EP/", type=str)
-parser.add_argument('--data_per', default=None, type=int, choices=[100, 25]) #for data stress test
 parser.add_argument("--linear_mode", default='linear', type=str, choices=["scratch", "linear", "fine_tuning"])
 parser.add_argument("--name", default=None, type=str, choices=["HWDAE", "WDDAE", "DDAE", "P2S2P", "DisAE", "HDAE", "SimMIM"])
 
@@ -45,45 +44,24 @@ def main():
     args.linear_mode = 'linear'
     
     print("ET/PD LINEAR TRAIN START")
-    if args.data_per == 100:
-        args.max_epochs = 50
-        args.warm_up_epoch = 10
+    args.max_epochs = 50
+    args.warm_up_epoch = 10
+    
+    for i in range(5):
+        args.fold = i+1
+        print(f"FOLD_{args.fold} TRAIN PROCESS START")
+        loaders = get_loader(args)
         
-        for i in range(5):
-            args.fold = i+1
-            print(f"FOLD_{args.fold} TRAIN PROCESS START")
-            loaders = get_loader(args)
-            
-            args.test = 0
-            main_worker(args=args, loader=loaders)
+        args.test = 0
+        main_worker(args=args, loader=loaders)
 
-            args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/test/"
-            args.log_dir_png = args.log_dir
-            os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
-            
-            args.test = 1
-            main_worker(args=args, loader=loaders)
-
-    elif args.data_per == 25:
-        args.max_epochs = 100
-        args.warm_up_epoch = 20
+        args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/test/"
+        args.log_dir_png = args.log_dir
+        os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
         
-        for i in range(10):
-            args.fold = (i*2)+1
-            print(f"FOLD_{args.fold} TRAIN PROCESS START")
+        args.test = 1
+        main_worker(args=args, loader=loaders)
 
-            loaders = get_loader(args)
-            
-            args.test = 0
-            main_worker(args=args, loader=loaders)
-            
-            args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/test/"
-            args.log_dir_png = args.log_dir
-            os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
-
-            args.test = 1
-            main_worker(args=args, loader=loaders)
-        
 def main_worker(args, loader):
     random.seed(42)
     np.random.seed(42)
@@ -117,7 +95,7 @@ def main_worker(args, loader):
     clf_loss_func = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
     
     if args.test == 0: #Train, Valid phase
-        args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/"
+        args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/"
         args.log_dir_png = args.log_dir + "png/"
         os.makedirs(args.log_dir, mode=0o777, exist_ok=True) 
         os.makedirs(args.log_dir_png, mode=0o777, exist_ok=True)

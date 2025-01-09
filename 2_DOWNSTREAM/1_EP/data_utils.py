@@ -13,7 +13,7 @@ import json
 
 def get_loader(args):
 
-    train_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS03_clf_ET_Early_PD_train_revised_{args.data_per}_fold{args.fold}.json"
+    train_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS03_clf_ET_Early_PD_train_revised_fold{args.fold}.json"
     test_03_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS03_clf_ET_Early_PD_test_revised.json"
     test_04_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS04_clf_ET_Early_PD_test_revised.json"
     test_SCH_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/SCH_clf_ET_Early_PD_test.json"

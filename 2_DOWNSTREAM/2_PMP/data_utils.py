@@ -5,7 +5,7 @@ from monai import data, transforms
 
 def get_loader(args):
 
-    train_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS03_clf_PD_MSA_PSP_train_{args.data_per}_fold{args.fold}.json"
+    train_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS03_clf_PD_MSA_PSP_train_fold{args.fold}.json"
     test_03_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS03_clf_PD_MSA_PSP_test.json"
     test_04_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS04_clf_PD_MSA_PSP_test.json"
     test_SCH_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/SCH_clf_PD_MSA_PSP_test.json"
@@ -71,12 +71,11 @@ def get_loader(args):
             transforms.LoadImaged(keys=["image_train"]),
             transforms.EnsureChannelFirstd(keys=["image_train"]),
             transforms.Orientationd(keys=["image_train"], axcodes="LPS"),
-            transforms.RandAffined(keys=["image_train"], translate_range=(5,0,5), padding_mode='zeros', prob=0.2),
-            transforms.RandZoomd(keys=["image_train"], min_zoom=0.9, max_zoom=1.2, padding_mode='minimum', prob=0.2),
+            transforms.RandAffined(keys=["image_train"], translate_range=(5,0,5), padding_mode='zeros', prob=0.1),
+            transforms.RandZoomd(keys=["image_train"], min_zoom=0.9, max_zoom=1.2, padding_mode='minimum', prob=0.1),
             transforms.RandRotated(keys=["image_train"], range_x=math.radians(15), range_y=math.radians(15), range_z=math.radians(15), prob=0.1), 
-            transforms.RandGaussianNoised(keys=["image_train"], mean=0.0, std=0.1, prob=0.4),
-            transforms.RandShiftIntensityd(keys=["image_train"], offsets=(0.02, 0.06), safe=False, prob=0.2, channel_wise=False),
-            transforms.RandGaussianSmoothd(keys=["image_train"], sigma_x=(0.25, 1.5), sigma_y=(0.25, 1.5), sigma_z=(0.25, 1.5), prob=0.2, approx='erf'),
+            transforms.RandGaussianNoised(keys=["image_train"], mean=0.0, std=0.1, prob=0.1),
+            transforms.RandGaussianSmoothd(keys=["image_train"], sigma_x=(0.25, 1.5), sigma_y=(0.25, 1.5), sigma_z=(0.25, 1.5), prob=0.1, approx='erf'),
             transforms.EnsureTyped(keys=["image_train", "label_train"]),
             transforms.ToTensord(keys=["image_train", "label_train"], track_meta=False)
         ]

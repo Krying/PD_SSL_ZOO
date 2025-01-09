@@ -4,7 +4,7 @@ from monai import data, transforms
 
 def get_loader_reg(args):
 
-    train_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS03_onset_train_{args.data_per}_fold{args.fold}.json"
+    train_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS03_onset_train_fold{args.fold}.json"
     test_03_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS03_onset_test.json"
     test_04_list = f"/workspace/PD_SSL_ZOO/2_DOWNSTREAM/JSON/{args.down_type}/PS04_onset_test.json"
     

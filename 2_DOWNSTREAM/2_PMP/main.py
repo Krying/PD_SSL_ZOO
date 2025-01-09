@@ -29,7 +29,6 @@ parser.add_argument('--cuda_visible_devices', default='0', type=str)
 parser.add_argument("--down_type", default=None, type=str, choices=["1_EP", "2_PMP", "3_SOY"])
 parser.add_argument("--log_dir", default="/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/", type=str)
 parser.add_argument("--log_dir_png", default="/workspace/PD_SSL_ZOO/2_DOWNSTREAM/2_PMP/", type=str)
-parser.add_argument('--data_per', default=None, type=int, choices=[100, 25]) #for data stress test
 parser.add_argument("--linear_mode", default='linear', type=str, choices=["scratch", "linear", "fine_tuning"])
 parser.add_argument("--name", default=None, type=str, choices=["HWDAE", "WDDAE", "DDAE", "P2S2P", "DisAE", "HDAE", "SimMIM"])
 
@@ -48,144 +47,83 @@ def main():
         args.batch_size = 6
         
         print("PD/MSA/PSP LINEAR TRAIN START")
-        print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
+        print(f"{args.name} TRAIN PROCESS START")
 
-        if args.data_per == 100:
-            args.max_epochs = 50
-            args.warm_up_epoch = 10
+        args.max_epochs = 50
+        args.warm_up_epoch = 10
 
-            for i in range(5):
-                args.fold = i+1
-                print(f"FOLD_{args.fold} TRAIN PROCESS START")
-                loaders = get_loader(args)
-                
-                args.test = 0
-                main_worker(args=args, loader=loaders)
-                
-                args.log_dir = args.log_dir + f'test/'
-                args.log_dir_png = args.log_dir
-                os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
+        for i in range(5):
+            args.fold = i+1
+            print(f"FOLD_{args.fold} TRAIN PROCESS START")
+            loaders = get_loader(args)
             
-                args.test = 1
-                main_worker(args=args, loader=loaders)
-
-        elif args.data_per == 25:
-            args.max_epochs = 200
-            args.warm_up_epoch = 40
-
-            for i in range(10):
-                args.fold = (i*2)+1
-                print(f"FOLD_{args.fold} TRAIN PROCESS START")
-                loaders = get_loader(args)
-                
-                args.test = 0
-                main_worker(args=args, loader=loaders)
-                
-                args.log_dir = args.log_dir + f'test/'
-                args.log_dir_png = args.log_dir
-                os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
-
-                args.test = 1
-                main_worker(args=args, loader=loaders)
+            args.test = 0
+            main_worker(args=args, loader=loaders)
+            
+            args.log_dir = args.log_dir + f'test/'
+            args.log_dir_png = args.log_dir
+            os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
+        
+            args.test = 1
+            main_worker(args=args, loader=loaders)
                 
 ##############################SCRATCH###############################
     elif args.linear_mode == 'scratch':
-        args.optim_lr = 5e-5
+        args.optim_lr = 2e-5
         if args.name in ['SimMIM', 'DisAE', 'P2S2P']:
             args.batch_size = 3
         elif args.name in [ 'HWDAE', 'WDDPM', 'DDAE']:
             args.batch_size = 6
             
         print("PD/MSA/PSP SCRATCH TRAIN START")
-        print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
+        print(f"{args.name} TRAIN PROCESS START")
         
-        if args.data_per == 100:
-            args.max_epochs = 100
-            args.warm_up_epoch = 20
+        args.max_epochs = 60
+        args.warm_up_epoch = 20
 
-            for i in range(5):
-                args.fold = i+1
-                print(f"FOLD_{args.fold} TRAIN PROCESS START")
-                loaders = get_loader(args)
+        for i in range(5):
+            args.fold = i+1
+            print(f"FOLD_{args.fold} TRAIN PROCESS START")
+            loaders = get_loader(args)
 
-                args.test = 0
-                main_worker(args=args, loader=loaders)
-                
-                args.log_dir = args.log_dir + f'test/'
-                args.log_dir_png = args.log_dir
-                os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
+            args.test = 0
+            main_worker(args=args, loader=loaders)
             
-                args.test = 1
-                main_worker(args=args, loader=loaders)
-                
-        elif args.data_per == 25:
-            args.max_epochs = 200
-            args.warm_up_epoch = 40
-            
-            for i in range(10):
-                args.fold = (i*2)+1
-                print(f"FOLD_{args.fold} TRAIN PROCESS START")
-                loaders = get_loader(args)
-                
-                args.test = 0
-                main_worker(args=args, loader=loaders)
-            
-                args.log_dir = args.log_dir + f'test/'
-                args.log_dir_png = args.log_dir
-                os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
-            
-                args.test = 1
-                main_worker(args=args, loader=loaders)
+            args.log_dir = args.log_dir + f'test/'
+            args.log_dir_png = args.log_dir
+            os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
+        
+            args.test = 1
+            main_worker(args=args, loader=loaders)
                 
 ############################FINE_TUNING#############################
     elif args.linear_mode == 'fine_tuning':
-        args.optim_lr = 5e-5
+        args.optim_lr = 2e-5
         if args.name in ['SimMIM', 'DisAE', 'P2S2P']:
             args.batch_size = 3
         elif args.name in [ 'HWDAE', 'WDDPM', 'DDAE']:
             args.batch_size = 6
                     
         print("PD/MSA/PSP FINE_TUNING TRAIN START")
-        print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
+        print(f"{args.name} TRAIN PROCESS START")
         
-        if args.data_per == 100:
-            args.max_epochs = 100
-            args.warm_up_epoch = 20
+        args.max_epochs = 40
+        args.warm_up_epoch = 20
+    
+        for i in range(5):
+            args.fold = i+1
+            print(f"FOLD_{args.fold} TRAIN PROCESS START")
+            loaders = get_loader(args)
+
+            args.test = 0
+            main_worker(args=args, loader=loaders)
+            
+            args.log_dir = args.log_dir + f'test/'
+            args.log_dir_png = args.log_dir
+            os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
         
-            for i in range(5):
-                args.fold = i+1
-                print(f"FOLD_{args.fold} TRAIN PROCESS START")
-                loaders = get_loader(args)
-
-                args.test = 0
-                main_worker(args=args, loader=loaders)
-                
-                args.log_dir = args.log_dir + f'test/'
-                args.log_dir_png = args.log_dir
-                os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
-            
-                args.test = 1
-                main_worker(args=args, loader=loaders)
-                
-        elif args.data_per == 25:
-            args.max_epochs = 200
-            args.warm_up_epoch = 40
-
-            for i in range(10):
-                args.fold = (i*2)+1
-                print(f"{args.name}_{args.data_per} TRAIN PROCESS START")
-                print(f"FOLD_{args.fold} TRAIN PROCESS START")
-                loaders = get_loader(args)
-
-                args.test = 0
-                main_worker(args=args, loader=loaders)
-                
-                args.log_dir = args.log_dir + f'test/'
-                args.log_dir_png = args.log_dir
-                os.makedirs(args.log_dir, mode=0o777, exist_ok=True)
-            
-                args.test = 1
-                main_worker(args=args, loader=loaders)
+            args.test = 1
+            main_worker(args=args, loader=loaders)
 
 def main_worker(args, loader):
     random.seed(42)
@@ -237,11 +175,11 @@ def main_worker(args, loader):
 
     if args.test == 0: #Train, Valid phase
         if args.linear_mode == 'linear':
-            args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/"
+            args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/"
         elif args.linear_mode == 'fine_tuning':
-            args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/"
+            args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/"
         elif args.linear_mode == 'scratch':
-            args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/"
+            args.log_dir = "/workspace/PD_SSL_ZOO/2_DOWNSTREAM/" + f"{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/"
 
         args.log_dir_png = args.log_dir + "/png/"
         os.makedirs(args.log_dir, mode=0o777, exist_ok=True) 
@@ -291,27 +229,27 @@ def main_worker(args, loader):
         epoch=f'ps_03{epoch_add}'
         
         test_stats_03 = test_epoch(args, 
-                                epoch, 
-                                loader[2], 
-                                model,
-                                clf_loss_func, 
-                                device)
+                                   epoch, 
+                                   loader[2], 
+                                   model,
+                                   clf_loss_func, 
+                                   device)
 
         epoch=f'ps_04{epoch_add}'
         test_stats_04 = test_epoch(args, 
-                                epoch, 
-                                loader[3], 
-                                model,
-                                clf_loss_func, 
-                                device)
+                                   epoch, 
+                                   loader[3], 
+                                   model,
+                                   clf_loss_func, 
+                                   device)
     
         epoch=f'sch{epoch_add}'
         test_stats_sch = test_epoch(args, 
-                                epoch, 
-                                loader[4], 
-                                model, 
-                                clf_loss_func, 
-                                device)
+                                    epoch, 
+                                    loader[4], 
+                                    model, 
+                                    clf_loss_func, 
+                                    device)
         
         log_stats = {**{f'test_stats_03{k}': v for k, v in test_stats_03.items()},
                     **{f'test_stats_04{k}': v for k, v in test_stats_04.items()},

@@ -210,8 +210,10 @@ def train_one_epoch(args, model, data_loader, optimizer, epoch, lr_scheduler):
         if (idx + 1) % args.accumulate_step == 0:
             optimizer.step()
             optimizer.zero_grad()
+            
+        if (idx + 1) % 967 == 0:
             lr_scheduler.step()
-
+        
         torch.cuda.synchronize()
 
         loss_meter.update(loss.item(), img.size(0))

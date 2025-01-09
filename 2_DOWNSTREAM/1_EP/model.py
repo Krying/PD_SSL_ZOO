@@ -62,7 +62,7 @@ def create_model(args):
 
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/' + f'{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_loss.pt'
+                ckpt_path = '/workspace/PD_SSL_ZOO/2_DOWNSTREAM/' + f'{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/model_best_loss.pt'
                 print(f"ckpt_path : {ckpt_path}")
                 
                 ckpt = torch.load(ckpt_path, map_location='cpu')
@@ -113,7 +113,7 @@ def create_model(args):
 
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_loss.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/model_best_loss.pt'
                 print(f"ckpt_path : {ckpt_path}")
                 
                 ckpt = torch.load(ckpt_path, map_location='cpu')
@@ -161,7 +161,7 @@ def create_model(args):
 
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_loss.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/model_best_loss.pt'
                 print(f"ckpt_path : {ckpt_path}")
                 
                 ckpt = torch.load(ckpt_path, map_location='cpu')
@@ -189,7 +189,7 @@ def create_model(args):
 
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_loss.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/model_best_loss.pt'
 
                 print(f"ckpt_path : {ckpt_path}")
                 
@@ -251,7 +251,7 @@ def create_model(args):
 
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_loss.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/model_best_loss.pt'
                 
                 print(f"ckpt_path : {ckpt_path}")
                 
@@ -320,7 +320,7 @@ def create_model(args):
 
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_loss.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/model_best_loss.pt'
                 print(f"ckpt_path : {ckpt_path}")
                 
                 ckpt = torch.load(ckpt_path, map_location='cpu')
@@ -367,7 +367,7 @@ def create_model(args):
 
         else:
             if args.linear_mode == 'linear':
-                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.data_per}/{args.name}/{args.name}_output_{args.fold}_{args.data_per}_{args.linear_mode}/model_best_loss.pt'
+                ckpt_path = f'/workspace/PD_SSL_ZOO/2_DOWNSTREAM/{args.down_type}/results/{args.name}/{args.name}_output_{args.fold}_{args.linear_mode}/model_best_loss.pt'
                 print(f"ckpt_path : {ckpt_path}")
                 
                 ckpt = torch.load(ckpt_path, map_location='cpu')

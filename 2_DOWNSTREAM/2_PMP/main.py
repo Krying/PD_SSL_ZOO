@@ -21,7 +21,8 @@ parser.add_argument("--num_class", default=3, type=int)
 parser.add_argument("--batch_size", default=8, type=int)
 parser.add_argument("--min_lr", default=1e-6, type=float)
 parser.add_argument("--eta_max", default=1e-4, type=float)
-parser.add_argument("--max_epochs", default=150, type=int)
+parser.add_argument("--max_epochs", default=100, type=int)
+parser.add_argument("--stop_epochs", default=40, type=int)
 parser.add_argument("--optim_lr", default=5e-5, type=float)
 parser.add_argument("--warm_up_epoch", default=10, type=int)
 parser.add_argument("--start_decay_epoch", default=45, type=int)
@@ -78,7 +79,8 @@ def main():
         print("PD/MSA/PSP SCRATCH TRAIN START")
         print(f"{args.name} TRAIN PROCESS START")
         
-        args.max_epochs = 60
+        args.max_epochs = 100
+        args.stop_epochs = 60
         args.warm_up_epoch = 20
 
         for i in range(5):
@@ -107,7 +109,8 @@ def main():
         print("PD/MSA/PSP FINE_TUNING TRAIN START")
         print(f"{args.name} TRAIN PROCESS START")
         
-        args.max_epochs = 40
+        args.max_epochs = 100
+        args.stop_epochs = 40
         args.warm_up_epoch = 20
     
         for i in range(5):
@@ -187,7 +190,7 @@ def main_worker(args, loader):
         
         val_auc_max = 0
 
-        for epoch in range(args.max_epochs): #Train phase / Valid phase
+        for epoch in range(args.stop_epochs): #Train phase / Valid phase
             train_stats = train_epoch(args, 
                                       epoch, 
                                       loader[0], 

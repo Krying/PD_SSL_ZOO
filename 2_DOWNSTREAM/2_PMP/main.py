@@ -51,6 +51,7 @@ def main():
         print(f"{args.name} TRAIN PROCESS START")
 
         args.max_epochs = 50
+        args.stop_epochs = 50
         args.warm_up_epoch = 10
 
         for i in range(5):

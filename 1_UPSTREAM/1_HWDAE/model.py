@@ -2,9 +2,9 @@ import torch
 
 # Reference:
 
-# source code: https://github.com/Project-MONAI/GenerativeModels/tree/main/generative
 # title: Generative AI for Medical Imaging: extending the MONAI Framework
 # url: https://arxiv.org/abs/2307.15208
+# source code: https://github.com/Project-MONAI/GenerativeModels/tree/main/generative
 
 def create_model(args): 
     if args.model == 'HWDAE':

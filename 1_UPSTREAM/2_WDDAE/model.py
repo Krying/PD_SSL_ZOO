@@ -1,4 +1,13 @@
 from generative.networks.nets.diffusion_model_aniso_unet import DiffusionModelUNet_aniso
+# Reference:
+
+#title: Generative AI for Medical Imaging: extending the MONAI Framework
+#url: https://arxiv.org/abs/2307.15208
+#source code: https://github.com/Project-MONAI/GenerativeModels/tree/main/generative
+
+#title: simple diffusion: End-to-end diffusion for high resolution images
+#url: https://arxiv.org/abs/2301.11093
+#source code: https://github.com/lucidrains/denoising-diffusion-pytorch
 
 def create_model(args): 
     if args.model == 'ddpm':

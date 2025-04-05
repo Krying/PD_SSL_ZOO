@@ -9,6 +9,12 @@ from monai.networks.blocks.dynunet_block import UnetBasicBlock, UnetResBlock, ge
 
 from .swin_transformer_3d import SwinTransformer3D
 
+from generative.networks.nets.diffusion_model_aniso_unet import DiffusionModelUNet_aniso
+# Reference:
+
+#title: SimMIM: A Simple Framework for Masked Image Modeling
+#url: https://arxiv.org/abs/2111.09886
+#source code: https://github.com/Project-MONAI/research-contributions/tree/main/DAE
 
 class PixelShuffle3D(nn.Module):
     """

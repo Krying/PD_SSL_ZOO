@@ -1,6 +1,12 @@
 from generative.networks.nets.diffusion_model_aniso_unet_AE_no_wavelet import DiffusionModelUNet_aniso_AE_no_wavelet, DiffusionModelEncoder_ansio_no_wavelet
 import torch
 
+# Reference:
+
+# source code: https://github.com/Project-MONAI/GenerativeModels/tree/main/generative
+# title: Generative AI for Medical Imaging: extending the MONAI Framework
+# url: https://arxiv.org/abs/2307.15208
+
 def create_model(args): 
     class HDAE(torch.nn.Module):
         def __init__(self):

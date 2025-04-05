@@ -19,4 +19,5 @@ retry==0.9.2
 fire==0.5.0
 nibabel==5.3.2
 timm==0.9.12
+Captum==0.7.0
 tensorboardx

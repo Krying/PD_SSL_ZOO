@@ -14,6 +14,12 @@ from monai.networks.blocks import UnetOutBlock, UnetrBasicBlock, UnetrUpBlock
 from monai.networks.blocks.dynunet_block import UnetBasicBlock, UnetResBlock, get_conv_layer
 
 from .swin_transformer_3d import SwinTransformer3D
+from generative.networks.nets.diffusion_model_aniso_unet import DiffusionModelUNet_aniso
+# Reference:
+
+#title: Disruptive Autoencoders: Leveraging Low-level features for 3D Medical Image Pre-training
+#url: https://arxiv.org/abs/2307.16896
+#source code: https://github.com/Project-MONAI/research-contributions/tree/main/DAE
 
 class SwinTransformerSkipForSimMIM(SwinTransformer3D):
     def __init__(self, **kwargs):

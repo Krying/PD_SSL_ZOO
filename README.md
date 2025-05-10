@@ -1,7 +1,22 @@
-# PD_SSL_ZOO
-This is the codebase for the paper "Self-Supervised Learning of 3D Dopamine Transporter Imaging using Diffusion Models as a Novel Biomarker for Parkinson's Disease".
+<h1 align="center"><b> PD_SSL_ZOO</b></h1>
 
-This repository is composed of   
+This is the codebase 
+for the paper "Enhancing 3D Dopamine Transporter Imaging as a Biomarker for Parkinson's Disease via Self-Supervised Learning with Diffusion Models".
+
+<p align="center"><img width=75% alt="FrontCover" src="./assets/Overview.png"></p>
+
+## Publication
+<b>Enhancing 3D Dopamine Transporter Imaging as a Biomarker for Parkinson's Disease via Self-Supervised Learning with Diffusion Models </b> <br/>
+
+Jongjun Won<sup>1</sup>, Grace Yoojin Lee<sup>1</sup>, Sungyang Jo<sup>1</sup>, Jihyun Lee<sup>1</sup>, Sangjin Lee<sup>1</sup>, Jae Seung Kim<sup>1</sup>, Changhwan Sung<sup>1</sup>, Jungsu S. Oh<sup>1</sup>, Kyum-Yil Kwon<sup>2</sup>, Soo Bin Park<sup>2</sup>, Joonsang Lee<sup>1</sup>, Jieun Yum<sup>1</sup>, Sun Ju Chung<sup>1</sup>, and Namkug Kim<sup>1</sup><br/>
+
+<sup>1 </sup>Asan Medical Center, <sup>2 </sup>Soonchunhyang University Seoul Hospital<br/>
+<b>*Cell Reports Medicine* (Pre-accept, to appear in 2025)</b>
+
+
+## Contents
+
+This repository is composed of
 
 1_UPSTREAM   
 2_DOWNSTREAM  
@@ -10,7 +25,6 @@ This repository is composed of
 
 Our overall workflow code parts are mainly in "1_UPSTREAM" and "2_DOWNSTREAM," illustrated below: 
 
-![image](./assets/Overview.png)
 
 <br/>
 

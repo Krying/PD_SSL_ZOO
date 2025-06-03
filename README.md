@@ -11,7 +11,7 @@ for the paper "Enhancing 3D Dopamine Transporter Imaging as a Biomarker for Park
 Jongjun Won<sup>1</sup>, Grace Yoojin Lee<sup>1</sup>, Sungyang Jo<sup>1</sup>, Jihyun Lee<sup>1</sup>, Sangjin Lee<sup>1</sup>, Jae Seung Kim<sup>1</sup>, Changhwan Sung<sup>1</sup>, Jungsu S. Oh<sup>1</sup>, Kyum-Yil Kwon<sup>2</sup>, Soo Bin Park<sup>2</sup>, Joonsang Lee<sup>1</sup>, Jieun Yum<sup>1</sup>, Sun Ju Chung<sup>1</sup>, and Namkug Kim<sup>1</sup><br/>
 
 <sup>1 </sup>Asan Medical Center, <sup>2 </sup>Soonchunhyang University Seoul Hospital<br/>
-<b>*Cell Reports Medicine* (Pre-accept, to appear in 2025)</b>
+<b>*Cell Reports Medicine* (Acceptance, to appear in 2025)</b>
 
 
 ## Contents
